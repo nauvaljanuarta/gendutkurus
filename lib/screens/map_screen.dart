@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/gym_model.dart';
 import '../services/supabase_service.dart';
 import 'detail_screen.dart';
@@ -17,11 +18,12 @@ class _MapScreenState extends State<MapScreen> {
   bool _isLoading = true;
   final MapController _mapController = MapController();
   Gym? _selectedGym;
+  Position? _userPosition;
 
   @override
   void initState() {
     super.initState();
-    _loadGyms();
+    _getUserLocationAndLoadGyms();
   }
 
   @override
@@ -30,18 +32,80 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
-  Future<void> _loadGyms() async {
+  String userPosDistText(Gym gym) {
+    if (_userPosition != null) {
+      double dist = Geolocator.distanceBetween(_userPosition!.latitude, _userPosition!.longitude, gym.latitude, gym.longitude);
+      if (dist > 1000) {
+        return '📍 ${(dist / 1000).toStringAsFixed(1)} km dari Anda';
+      } else {
+        return '📍 ${dist.toStringAsFixed(0)} m dari Anda';
+      }
+    }
+    return '📍 ${gym.latitude.toStringAsFixed(4)}, ${gym.longitude.toStringAsFixed(4)}';
+  }
+
+  Future<void> _getUserLocationAndLoadGyms() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+        final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+        setState(() {
+          _userPosition = position;
+        });
+        await _loadGyms(position);
+      } else {
+        await _loadGyms(null);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mendapatkan lokasi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      await _loadGyms(null);
+    }
+  }
+
+  Future<void> _loadGyms(Position? userPos) async {
     try {
       final gyms = await SupabaseService.fetchGyms();
       // Filter out gyms that don't have valid coordinates
-      final validGyms = gyms.where((g) => g.latitude != 0.0 && g.longitude != 0.0).toList();
+      var validGyms = gyms.where((g) => g.latitude != 0.0 && g.longitude != 0.0).toList();
+
+      if (userPos != null) {
+        validGyms.sort((a, b) {
+          double distA = Geolocator.distanceBetween(userPos.latitude, userPos.longitude, a.latitude, a.longitude);
+          double distB = Geolocator.distanceBetween(userPos.latitude, userPos.longitude, b.latitude, b.longitude);
+          return distA.compareTo(distB);
+        });
+        if (validGyms.length > 10) {
+          validGyms = validGyms.sublist(0, 10);
+        }
+      }
+
       setState(() {
         _gyms = validGyms;
         _isLoading = false;
       });
 
-      // Move map to the center of the first gym if available
-      if (validGyms.isNotEmpty) {
+      // Move map to the center of the user or first gym if available
+      if (userPos != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _mapController.move(
+            LatLng(userPos.latitude, userPos.longitude),
+            13.0,
+          );
+        });
+      } else if (validGyms.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _mapController.move(
             LatLng(validGyms[0].latitude, validGyms[0].longitude),
@@ -55,6 +119,7 @@ class _MapScreenState extends State<MapScreen> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -98,8 +163,25 @@ class _MapScreenState extends State<MapScreen> {
                                 userAgentPackageName: 'com.example.gendutkurus',
                               ),
                               MarkerLayer(
-                                markers: _gyms.map((gym) {
-                                  final isSelected = _selectedGym?.gymId == gym.gymId;
+                                markers: [
+                                  if (_userPosition != null)
+                                    Marker(
+                                      point: LatLng(_userPosition!.latitude, _userPosition!.longitude),
+                                      width: 60,
+                                      height: 60,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.green.withValues(alpha: 0.3),
+                                          border: Border.all(color: Colors.green, width: 2),
+                                        ),
+                                        child: const Center(
+                                          child: Icon(Icons.my_location, color: Colors.green, size: 30),
+                                        ),
+                                      ),
+                                    ),
+                                  ..._gyms.map((gym) {
+                                    final isSelected = _selectedGym?.gymId == gym.gymId;
                                   return Marker(
                                     point: LatLng(gym.latitude, gym.longitude),
                                     width: 50,
@@ -154,7 +236,8 @@ class _MapScreenState extends State<MapScreen> {
                                       ),
                                     ),
                                   );
-                                }).toList(),
+                                  }).toList(),
+                                ],
                               ),
                             ],
                           ),
@@ -367,7 +450,7 @@ class _MapScreenState extends State<MapScreen> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          '📍 ${gym.latitude.toStringAsFixed(4)}, ${gym.longitude.toStringAsFixed(4)}',
+                                          userPosDistText(gym),
                                           style: const TextStyle(
                                             color: Colors.white38,
                                             fontSize: 11,
