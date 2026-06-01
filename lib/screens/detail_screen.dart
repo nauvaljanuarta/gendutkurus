@@ -133,7 +133,7 @@ class DetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   // Info kontak
-                  if (gym.phone != null || gym.website != null) ...[
+                  if (gym.phone != null || (gym.website != null && gym.website!.isNotEmpty && gym.website!.toLowerCase() != 'tidak tersedia' && gym.website! != '-')) ...[
                     const Text(
                       'Kontak',
                       style: TextStyle(
@@ -143,13 +143,53 @@ class DetailScreen extends StatelessWidget {
                     Wrap(
                       spacing: 10,
                       runSpacing: 10,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         if (gym.phone != null)
                           _InfoChip(
                               icon: Icons.phone, label: gym.phone!),
-                        if (gym.website != null)
-                          _InfoChip(
-                              icon: Icons.language, label: gym.website!),
+                        if (gym.website != null &&
+                            gym.website!.isNotEmpty &&
+                            gym.website!.toLowerCase() != 'tidak tersedia' &&
+                            gym.website! != '-')
+                          InkWell(
+                            onTap: () => _openWebsite(context),
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF2979FF).withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.language, size: 16, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Info GYM',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -203,26 +243,6 @@ class DetailScreen extends StatelessWidget {
                       label: const Text('Lihat Lokasi di Google Maps'),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  // Tombol navigasi rute ke gym
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _openGoogleMapsDirections(context),
-                      icon: const Icon(Icons.directions, color: Color(0xFF2979FF)),
-                      label: const Text(
-                        'Navigasi Rute ke Gym',
-                        style: TextStyle(color: Color(0xFF2979FF)),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF2979FF)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -230,6 +250,27 @@ class DetailScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Buka website gym di browser
+  Future<void> _openWebsite(BuildContext context) async {
+    String urlString = gym.website!;
+    // Tambahkan https:// jika belum ada
+    if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
+      urlString = 'https://$urlString';
+    }
+
+    final url = Uri.parse(urlString);
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat membuka website')),
+        );
+      }
+    }
   }
 
   /// Buka Google Maps di lokasi gym
@@ -243,30 +284,6 @@ class DetailScreen extends StatelessWidget {
 
     final url = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=${gym.latitude},${gym.longitude}',
-    );
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak dapat membuka Google Maps')),
-        );
-      }
-    }
-  }
-
-  /// Buka Google Maps dengan navigasi rute dari lokasi user ke gym
-  Future<void> _openGoogleMapsDirections(BuildContext context) async {
-    if (gym.latitude == 0.0 && gym.longitude == 0.0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Koordinat gym tidak tersedia')),
-      );
-      return;
-    }
-
-    final url = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&destination=${gym.latitude},${gym.longitude}&travelmode=driving',
     );
 
     if (await canLaunchUrl(url)) {
