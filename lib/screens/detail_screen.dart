@@ -1,11 +1,93 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/gym_model.dart';
+import '../services/supabase_service.dart';
 
-class DetailScreen extends StatelessWidget {
+class DetailScreen extends StatefulWidget {
   final Gym gym;
 
   const DetailScreen({super.key, required this.gym});
+
+  @override
+  State<DetailScreen> createState() => _DetailScreenState();
+}
+
+class _DetailScreenState extends State<DetailScreen> {
+  Gym get gym => widget.gym;
+  bool _isFavorite = false;
+  bool _isCheckingFavorite = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfFavorite();
+  }
+
+  Future<void> _checkIfFavorite() async {
+    final user = SupabaseService.client.auth.currentUser;
+    if (user != null) {
+      try {
+        final isFav = await SupabaseService.isFavorite(user.id, gym.gymId);
+        if (mounted) {
+          setState(() {
+            _isFavorite = isFav;
+            _isCheckingFavorite = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isCheckingFavorite = false;
+          });
+        }
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _isCheckingFavorite = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    final user = SupabaseService.client.auth.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan login terlebih dahulu untuk menyukai gym ini'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final newFavState = await SupabaseService.toggleFavorite(user.id, gym.gymId);
+      if (mounted) {
+        setState(() {
+          _isFavorite = newFavState;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(newFavState
+                ? 'Gym berhasil ditambahkan ke favorit'
+                : 'Gym berhasil dihapus dari favorit'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memperbarui favorit: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,12 +145,39 @@ class DetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    gym.name,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          gym.name,
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _isCheckingFavorite
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.redAccent),
+                              ),
+                            )
+                          : IconButton(
+                              icon: Icon(
+                                _isFavorite ? Icons.favorite : Icons.favorite_border,
+                                color: _isFavorite ? Colors.redAccent : Colors.white60,
+                                size: 28,
+                              ),
+                              onPressed: _toggleFavorite,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Row(

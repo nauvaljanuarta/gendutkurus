@@ -3,6 +3,7 @@ import '../models/gym_model.dart';
 import '../services/supabase_service.dart';
 import '../widgets/gym_card.dart';
 import 'detail_screen.dart';
+import 'login_screen.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -63,12 +64,32 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.favorite_border, color: Colors.white24, size: 64),
-            SizedBox(height: 16),
-            Text(
+          children: [
+            const Icon(Icons.favorite_border, color: Colors.white24, size: 64),
+            const SizedBox(height: 16),
+            const Text(
               'Login untuk melihat gym favorit',
-              style: TextStyle(color: Colors.white70, fontSize: 16),
+              style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                ).then((_) => _loadFavorites());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2979FF),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: const Text(
+                'Masuk Sekarang',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -129,7 +150,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                 MaterialPageRoute(
                   builder: (_) => DetailScreen(gym: gym),
                 ),
-              );
+              ).then((_) => _loadFavorites());
             },
           );
         },
