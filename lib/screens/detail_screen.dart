@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/gym_model.dart';
 
 class DetailScreen extends StatelessWidget {
@@ -193,14 +194,33 @@ class DetailScreen extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(height: 28),
+                  // Tombol buka Google Maps — lihat lokasi
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/map');
-                      },
-                      icon: const Icon(Icons.map),
-                      label: const Text('Lihat Lokasi di Peta'),
+                      onPressed: () => _openGoogleMaps(context),
+                      icon: const Icon(Icons.location_on),
+                      label: const Text('Lihat Lokasi di Google Maps'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Tombol navigasi rute ke gym
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _openGoogleMapsDirections(context),
+                      icon: const Icon(Icons.directions, color: Color(0xFF2979FF)),
+                      label: const Text(
+                        'Navigasi Rute ke Gym',
+                        style: TextStyle(color: Color(0xFF2979FF)),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF2979FF)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                      ),
                     ),
                   ),
                 ],
@@ -210,6 +230,54 @@ class DetailScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Buka Google Maps di lokasi gym
+  Future<void> _openGoogleMaps(BuildContext context) async {
+    if (gym.latitude == 0.0 && gym.longitude == 0.0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Koordinat gym tidak tersedia')),
+      );
+      return;
+    }
+
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${gym.latitude},${gym.longitude}',
+    );
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat membuka Google Maps')),
+        );
+      }
+    }
+  }
+
+  /// Buka Google Maps dengan navigasi rute dari lokasi user ke gym
+  Future<void> _openGoogleMapsDirections(BuildContext context) async {
+    if (gym.latitude == 0.0 && gym.longitude == 0.0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Koordinat gym tidak tersedia')),
+      );
+      return;
+    }
+
+    final url = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&destination=${gym.latitude},${gym.longitude}&travelmode=driving',
+    );
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat membuka Google Maps')),
+        );
+      }
+    }
   }
 
   List<Color> _getCategoryGradient(String? category) {
