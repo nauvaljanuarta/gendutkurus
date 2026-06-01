@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/main_navigation.dart';
 import 'screens/map_screen.dart';
 import 'screens/splash_screen.dart';
 import 'themes/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://vmnldnlneatsyapvwwsb.supabase.co',
+    anonKey: 'sb_publishable_hO6pqJLJ4StR_QXNPX4ArA_ueeW_dyn',
+  );
+
   runApp(const GendutKurusApp());
 }
 

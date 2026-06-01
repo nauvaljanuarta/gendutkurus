@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_gyms.dart';
 import '../models/gym_model.dart';
+import '../models/category_model.dart';
+import '../services/supabase_service.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/category_chip.dart';
 import '../widgets/gym_card.dart';
@@ -17,16 +18,50 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
-  String _selectedCategory = gymCategories.first;
+  int? _selectedCategoryId; // null = Semua
+  List<Gym> _gyms = [];
+  List<Category> _categories = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final results = await Future.wait([
+        SupabaseService.fetchGyms(),
+        SupabaseService.fetchCategories(),
+      ]);
+
+      setState(() {
+        _gyms = results[0] as List<Gym>;
+        _categories = results[1] as List<Category>;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   List<Gym> get _filteredGyms {
-    return dummyGyms.where((gym) {
+    return _gyms.where((gym) {
       final query = _searchQuery.toLowerCase();
-      final matchesSearch =
-          gym.name.toLowerCase().contains(query) ||
+      final matchesSearch = gym.name.toLowerCase().contains(query) ||
           gym.address.toLowerCase().contains(query);
       final matchesCategory =
-          _selectedCategory == 'Semua' || gym.category == _selectedCategory;
+          _selectedCategoryId == null || gym.categoryId == _selectedCategoryId;
       return matchesSearch && matchesCategory;
     }).toList();
   }
@@ -109,55 +144,118 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Category chips — dari Supabase
               SizedBox(
                 height: 46,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: gymCategories.length,
-                  itemBuilder: (context, index) {
-                    final category = gymCategories[index];
-                    return CategoryChip(
-                      label: category,
-                      isSelected: category == _selectedCategory,
-                      onTap: () {
-                        setState(() {
-                          _selectedCategory = category;
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: _filteredGyms.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'Tidak ada gym yang sesuai.',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      )
+                child: _categories.isEmpty
+                    ? const SizedBox.shrink()
                     : ListView.builder(
-                        itemCount: _filteredGyms.length,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _categories.length + 1, // +1 untuk "Semua"
                         itemBuilder: (context, index) {
-                          final gym = _filteredGyms[index];
-                          return GymCard(
-                            gym: gym,
+                          if (index == 0) {
+                            return CategoryChip(
+                              label: 'Semua',
+                              isSelected: _selectedCategoryId == null,
+                              onTap: () {
+                                setState(() {
+                                  _selectedCategoryId = null;
+                                });
+                              },
+                            );
+                          }
+                          final category = _categories[index - 1];
+                          return CategoryChip(
+                            label: category.name,
+                            isSelected:
+                                _selectedCategoryId == category.id,
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => DetailScreen(gym: gym),
-                                ),
-                              );
+                              setState(() {
+                                _selectedCategoryId = category.id;
+                              });
                             },
                           );
                         },
                       ),
               ),
+              const SizedBox(height: 20),
+              // Gym list — dari Supabase
+              Expanded(
+                child: _buildGymList(),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildGymList() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white38, size: 48),
+            const SizedBox(height: 12),
+            Text(
+              'Gagal memuat data',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: const TextStyle(color: Colors.white38, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final gyms = _filteredGyms;
+
+    if (gyms.isEmpty) {
+      return const Center(
+        child: Text(
+          'Tidak ada gym yang sesuai.',
+          style: TextStyle(color: Colors.white70),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: ListView.builder(
+        itemCount: gyms.length,
+        itemBuilder: (context, index) {
+          final gym = gyms[index];
+          return GymCard(
+            gym: gym,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DetailScreen(gym: gym),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }

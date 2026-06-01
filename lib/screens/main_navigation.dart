@@ -17,17 +17,28 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomeScreen(),
-    MapScreen(),
-    FavoriteScreen(),
-    ProfileScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    Widget page;
+    switch (_currentIndex) {
+      case 0:
+        page = const HomeScreen();
+        break;
+      case 1:
+        page = const MapScreen();
+        break;
+      case 2:
+        page = const FavoriteScreen();
+        break;
+      case 3:
+        page = const ProfileScreen();
+        break;
+      default:
+        page = const HomeScreen();
+    }
+
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: page,
       bottomNavigationBar: AppBottomNav(
         currentIndex: _currentIndex,
         onTap: (index) {
