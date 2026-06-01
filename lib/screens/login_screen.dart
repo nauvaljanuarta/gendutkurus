@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
+  String? _passwordError;
 
   @override
   void dispose() {
@@ -33,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _passwordError = null;
     });
 
     try {
@@ -58,9 +60,18 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _errorMessage = e.toString().replaceAll('Exception: ', '');
-        });
+        final errString = e.toString();
+        if (errString.contains('invalid_credentials') || errString.contains('Invalid login credentials')) {
+          setState(() {
+            _passwordError = 'Email atau password salah';
+            _errorMessage = null;
+          });
+        } else {
+          setState(() {
+            _errorMessage = errString.replaceAll('Exception: ', '');
+            _passwordError = null;
+          });
+        }
       }
     } finally {
       if (mounted) {
@@ -234,9 +245,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     style: const TextStyle(color: Colors.white),
+                    onChanged: (val) {
+                      if (_passwordError != null) {
+                        setState(() {
+                          _passwordError = null;
+                        });
+                      }
+                    },
                     decoration: InputDecoration(
                       hintText: 'Masukkan password Anda',
                       hintStyle: const TextStyle(color: Colors.white30),
+                      errorText: _passwordError,
                       prefixIcon: const Icon(Icons.lock_outline, color: Colors.white54),
                       suffixIcon: IconButton(
                         icon: Icon(
