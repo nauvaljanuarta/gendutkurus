@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../models/gym_model.dart';
-import '../services/supabase_service.dart';
-import '../widgets/gym_card.dart';
-import 'detail_screen.dart';
-import 'login_screen.dart';
+import '../../models/gym_model.dart';
+import '../../services/api_client.dart';
+import '../../services/favorite_service.dart';
+import '../../widgets/gym_card.dart';
+import '../gym/detail_screen.dart';
+import '../auth/login_screen.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -30,9 +31,9 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     });
 
     try {
-      final user = SupabaseService.client.auth.currentUser;
+      final user = ApiClient.client.auth.currentUser;
       if (user != null) {
-        _favorites = await SupabaseService.fetchFavorites(user.id);
+        _favorites = await FavoriteService.fetchFavorites(user.id);
       } else {
         // Jika belum login, tampilkan pesan
         _favorites = [];
@@ -48,7 +49,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = SupabaseService.client.auth.currentUser;
+    final user = ApiClient.client.auth.currentUser;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Favorite'), elevation: 0),

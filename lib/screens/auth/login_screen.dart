@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/supabase_service.dart';
-import 'main_navigation.dart';
+import '../../services/api_client.dart';
+import '../main_navigation.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await SupabaseService.client.auth.signInWithPassword(
+      await ApiClient.client.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );

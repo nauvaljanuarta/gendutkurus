@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/supabase_service.dart';
-import 'main_navigation.dart';
+import '../../services/api_client.dart';
+import '../main_navigation.dart';
 
 class RegisterScreen extends StatefulWidget {
   static const routeName = '/register';
@@ -40,7 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      await SupabaseService.client.auth.signUp(
+      await ApiClient.client.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
         data: {

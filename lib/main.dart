@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/main_navigation.dart';
-import 'screens/map_screen.dart';
+import 'screens/gym/map_screen.dart';
 import 'screens/splash_screen.dart';
 import 'themes/app_theme.dart';
 

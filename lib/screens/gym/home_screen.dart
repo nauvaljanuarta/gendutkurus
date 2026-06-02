@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/gym_model.dart';
-import '../models/category_model.dart';
-import '../services/supabase_service.dart';
-import '../widgets/search_bar.dart';
-import '../widgets/category_chip.dart';
-import '../widgets/gym_card.dart';
+import '../../models/gym_model.dart';
+import '../../models/category_model.dart';
+import '../../services/gym_service.dart';
+import '../../services/category_service.dart';
+import '../../widgets/search_bar.dart';
+import '../../widgets/category_chip.dart';
+import '../../widgets/gym_card.dart';
 import 'detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,8 +39,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final results = await Future.wait([
-        SupabaseService.fetchGyms(),
-        SupabaseService.fetchCategories(),
+        GymService.fetchGyms(),
+        CategoryService.fetchCategories(),
       ]);
 
       setState(() {

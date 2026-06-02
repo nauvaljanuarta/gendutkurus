@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/supabase_service.dart';
-import 'login_screen.dart';
-import 'register_screen.dart';
+import '../../services/api_client.dart';
+import '../auth/login_screen.dart';
+import '../auth/register_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,7 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      await SupabaseService.client.auth.signOut();
+      await ApiClient.client.auth.signOut();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -49,7 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = SupabaseService.client.auth.currentUser;
+    final user = ApiClient.client.auth.currentUser;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profil Saya'), elevation: 0),
