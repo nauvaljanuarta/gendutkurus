@@ -16,6 +16,9 @@ class _DetailScreenState extends State<DetailScreen> {
   Gym get gym => widget.gym;
   bool _isFavorite = false;
   bool _isCheckingFavorite = true;
+  
+  // Variabel baru untuk melacak gambar yang sedang dilihat
+  int _currentImageIndex = 0;
 
   @override
   void initState() {
@@ -97,49 +100,9 @@ class _DetailScreenState extends State<DetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header visual — gradient berdasarkan kategori
-            Container(
-              height: 220,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: _getCategoryGradient(gym.categoryName),
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      _getCategoryIcon(gym.categoryName),
-                      size: 64,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 12),
-                    if (gym.categoryName != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black26,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          gym.categoryName!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+            // BAGIAN YANG DIUBAH: MENAMPILKAN SLIDER GAMBAR
+            _buildImageSlider(),
+
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -219,7 +182,6 @@ class _DetailScreenState extends State<DetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Alamat
                   const Text(
                     'Alamat Lengkap',
                     style: TextStyle(
@@ -241,7 +203,6 @@ class _DetailScreenState extends State<DetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Info kontak
                   if (gym.phone != null || (gym.website != null && gym.website!.isNotEmpty && gym.website!.toLowerCase() != 'tidak tersedia' && gym.website! != '-')) ...[
                     const Text(
                       'Kontak',
@@ -303,7 +264,6 @@ class _DetailScreenState extends State<DetailScreen> {
                     ),
                     const SizedBox(height: 20),
                   ],
-                  // Deskripsi
                   const Text(
                     'Deskripsi',
                     style: TextStyle(
@@ -318,7 +278,6 @@ class _DetailScreenState extends State<DetailScreen> {
                         color: Colors.white70, height: 1.5),
                   ),
                   const SizedBox(height: 12),
-                  // Koordinat info
                   if (gym.latitude != 0.0 && gym.longitude != 0.0)
                     Container(
                       width: double.infinity,
@@ -343,7 +302,6 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
                     ),
                   const SizedBox(height: 28),
-                  // Tombol buka Google Maps — lihat lokasi
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -361,82 +319,149 @@ class _DetailScreenState extends State<DetailScreen> {
     );
   }
 
-  /// Buka website gym di browser
+  // WIDGET BARU UNTUK SLIDER GAMBAR
+  Widget _buildImageSlider() {
+    // Jika tidak ada gambar di database, tampilkan warna warni bawaan Anda
+    if (gym.imageUrls.isEmpty) {
+      return _buildFallbackGradient();
+    }
+
+    // Jika ada gambar, buat Slider yang bisa digeser
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        SizedBox(
+          height: 250, // Tinggi slider gambar
+          width: double.infinity,
+          child: PageView.builder(
+            itemCount: gym.imageUrls.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentImageIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return Image.network(
+                gym.imageUrls[index],
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => _buildFallbackGradient(),
+              );
+            },
+          ),
+        ),
+        
+        // Titik-titik indikator (Dots) di atas gambar
+        if (gym.imageUrls.length > 1)
+          Positioned(
+            bottom: 12,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                gym.imageUrls.length,
+                (index) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: _currentImageIndex == index ? 24 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _currentImageIndex == index ? const Color(0xFF2979FF) : Colors.white70,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // Menampilkan warna warni 
+  Widget _buildFallbackGradient() {
+    return Container(
+      height: 220,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: _getCategoryGradient(gym.categoryName),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _getCategoryIcon(gym.categoryName),
+              size: 64,
+              color: Colors.white,
+            ),
+            const SizedBox(height: 12),
+            if (gym.categoryName != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  gym.categoryName!,
+                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _openWebsite(BuildContext context) async {
     String urlString = gym.website!;
-    // Tambahkan https:// jika belum ada
     if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
       urlString = 'https://$urlString';
     }
-
     final url = Uri.parse(urlString);
-
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak dapat membuka website')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak dapat membuka website')));
       }
     }
   }
 
-  /// Buka Google Maps di lokasi gym
   Future<void> _openGoogleMaps(BuildContext context) async {
     if (gym.latitude == 0.0 && gym.longitude == 0.0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Koordinat gym tidak tersedia')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Koordinat gym tidak tersedia')));
       return;
     }
-
-    final url = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=${gym.latitude},${gym.longitude}',
-    );
-
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=${gym.latitude},${gym.longitude}');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak dapat membuka Google Maps')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak dapat membuka Google Maps')));
       }
     }
   }
 
   List<Color> _getCategoryGradient(String? category) {
     switch (category?.toLowerCase()) {
-      case 'gym premium':
-        return [const Color(0xFF6A11CB), const Color(0xFF2575FC)];
-      case 'gym murah':
-        return [const Color(0xFF11998E), const Color(0xFF38EF7D)];
-      case 'gym 24 jam':
-        return [const Color(0xFFFC466B), const Color(0xFF3F5EFB)];
-      case 'fitness wanita':
-        return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
-      case 'crossfit':
-        return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
-      default:
-        return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
+      case 'gym premium': return [const Color(0xFF6A11CB), const Color(0xFF2575FC)];
+      case 'gym murah': return [const Color(0xFF11998E), const Color(0xFF38EF7D)];
+      case 'gym 24 jam': return [const Color(0xFFFC466B), const Color(0xFF3F5EFB)];
+      case 'fitness wanita': return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
+      case 'crossfit': return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
+      default: return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
     }
   }
 
   IconData _getCategoryIcon(String? category) {
     switch (category?.toLowerCase()) {
-      case 'gym premium':
-        return Icons.fitness_center;
-      case 'gym murah':
-        return Icons.attach_money;
-      case 'gym 24 jam':
-        return Icons.schedule;
-      case 'fitness wanita':
-        return Icons.female;
-      case 'crossfit':
-        return Icons.sports_gymnastics;
-      default:
-        return Icons.fitness_center;
+      case 'gym premium': return Icons.fitness_center;
+      case 'gym murah': return Icons.attach_money;
+      case 'gym 24 jam': return Icons.schedule;
+      case 'fitness wanita': return Icons.female;
+      case 'crossfit': return Icons.sports_gymnastics;
+      default: return Icons.fitness_center;
     }
   }
 }
@@ -460,10 +485,7 @@ class _InfoChip extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: const Color(0xFF2979FF)),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-          ),
+          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
         ],
       ),
     );

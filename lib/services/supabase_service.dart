@@ -11,7 +11,7 @@ class SupabaseService {
   static Future<List<Gym>> fetchGyms() async {
     final response = await client
         .from('gyms')
-        .select('*, categories(name, icon)')
+        .select('*, categories(name, icon), gym_images(image_url)')
         .order('name', ascending: true);
 
     return (response as List)
@@ -23,7 +23,7 @@ class SupabaseService {
   static Future<List<Gym>> fetchGymsByCategory(int categoryId) async {
     final response = await client
         .from('gyms')
-        .select('*, categories(name, icon)')
+        .select('*, categories(name, icon), gym_images(image_url)')
         .eq('category_id', categoryId)
         .order('name', ascending: true);
 
@@ -36,7 +36,7 @@ class SupabaseService {
   static Future<List<Gym>> searchGyms(String query) async {
     final response = await client
         .from('gyms')
-        .select('*, categories(name, icon)')
+        .select('*, categories(name, icon), gym_images(image_url)')
         .or('name.ilike.%$query%,address.ilike.%$query%')
         .order('name', ascending: true);
 
@@ -49,7 +49,7 @@ class SupabaseService {
   static Future<Gym?> fetchGymById(int gymId) async {
     final response = await client
         .from('gyms')
-        .select('*, categories(name, icon)')
+        .select('*, categories(name, icon), gym_images(image_url)')
         .eq('gym_id', gymId)
         .maybeSingle();
 
@@ -77,7 +77,7 @@ class SupabaseService {
   static Future<List<Gym>> fetchFavorites(String userId) async {
     final response = await client
         .from('favorites')
-        .select('gym_id, gyms(*, categories(name, icon))')
+        .select('gym_id, gyms(*, categories(name, icon), gym_images(image_url))')
         .eq('user_id', userId);
 
     return (response as List)

@@ -16,70 +16,26 @@ class GymCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image area — gradient placeholder karena tidak ada imageUrl di DB
+            // MENAMPILKAN GAMBAR
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24),
               ),
-              child: Container(
+              child: SizedBox(
                 height: 170,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: _getCategoryGradient(gym.categoryName),
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    // Pattern overlay
-                    Positioned.fill(
-                      child: Opacity(
-                        opacity: 0.1,
-                        child: Icon(
-                          _getCategoryIcon(gym.categoryName),
-                          size: 180,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    // Main icon
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            _getCategoryIcon(gym.categoryName),
-                            size: 48,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(height: 8),
-                          if (gym.categoryName != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black26,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                gym.categoryName!,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                // Jika gym punya gambar, tampilkan gambar pertama [0]
+                child: gym.imageUrls.isNotEmpty
+                    ? Image.network(
+                        gym.imageUrls[0],
+                        fit: BoxFit.cover,
+                        // Jika URL error/putus, tampilkan warna default
+                        errorBuilder: (context, error, stackTrace) => _buildFallbackGradient(),
+                      )
+                    // Jika gym TIDAK punya gambar, tampilkan warna default
+                    : _buildFallbackGradient(),
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -126,7 +82,7 @@ class GymCard extends StatelessWidget {
                           ),
                         ),
                       const Spacer(),
-                      Icon(
+                      const Icon(
                         Icons.access_time,
                         size: 14,
                         color: Colors.white54,
@@ -180,39 +136,77 @@ class GymCard extends StatelessWidget {
     );
   }
 
-  /// Gradient warna berdasarkan kategori gym
+  // Jika tidak ada gambar, tampilkan warna warni bawaan Anda
+  Widget _buildFallbackGradient() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: _getCategoryGradient(gym.categoryName),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.1,
+              child: Icon(
+                _getCategoryIcon(gym.categoryName),
+                size: 180,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _getCategoryIcon(gym.categoryName),
+                  size: 48,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 8),
+                if (gym.categoryName != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      gym.categoryName!,
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<Color> _getCategoryGradient(String? category) {
     switch (category?.toLowerCase()) {
-      case 'gym premium':
-        return [const Color(0xFF6A11CB), const Color(0xFF2575FC)];
-      case 'gym murah':
-        return [const Color(0xFF11998E), const Color(0xFF38EF7D)];
-      case 'gym 24 jam':
-        return [const Color(0xFFFC466B), const Color(0xFF3F5EFB)];
-      case 'fitness wanita':
-        return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
-      case 'crossfit':
-        return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
-      default:
-        return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
+      case 'gym premium': return [const Color(0xFF6A11CB), const Color(0xFF2575FC)];
+      case 'gym murah': return [const Color(0xFF11998E), const Color(0xFF38EF7D)];
+      case 'gym 24 jam': return [const Color(0xFFFC466B), const Color(0xFF3F5EFB)];
+      case 'fitness wanita': return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
+      case 'crossfit': return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
+      default: return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
     }
   }
 
-  /// Ikon berdasarkan kategori gym
   IconData _getCategoryIcon(String? category) {
     switch (category?.toLowerCase()) {
-      case 'gym premium':
-        return Icons.fitness_center;
-      case 'gym murah':
-        return Icons.attach_money;
-      case 'gym 24 jam':
-        return Icons.schedule;
-      case 'fitness wanita':
-        return Icons.female;
-      case 'crossfit':
-        return Icons.sports_gymnastics;
-      default:
-        return Icons.fitness_center;
+      case 'gym premium': return Icons.fitness_center;
+      case 'gym murah': return Icons.attach_money;
+      case 'gym 24 jam': return Icons.schedule;
+      case 'fitness wanita': return Icons.female;
+      case 'crossfit': return Icons.sports_gymnastics;
+      default: return Icons.fitness_center;
     }
   }
 }
