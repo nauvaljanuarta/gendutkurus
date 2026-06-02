@@ -43,8 +43,14 @@ class _HomeScreenState extends State<HomeScreen> {
         CategoryService.fetchCategories(),
       ]);
 
+      // DEBUG: cek isi imageUrls dari Supabase
+      final loadedGyms = results[0] as List<Gym>;
+      for (final g in loadedGyms) {
+        print('GYM: ${g.name} | imageUrls: ${g.imageUrls}');
+      }
+
       setState(() {
-        _gyms = results[0] as List<Gym>;
+        _gyms = loadedGyms;
         _categories = results[1] as List<Category>;
         _isLoading = false;
       });
