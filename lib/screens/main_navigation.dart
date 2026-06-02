@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_bottom_nav.dart';
-import 'favorite_screen.dart';
-import 'home_screen.dart';
-import 'map_screen.dart';
-import 'profile_screen.dart';
+import 'favorite/favorite_screen.dart';
+import 'gym/home_screen.dart';
+import 'gym/map_screen.dart';
+import 'profile/profile_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   static const routeName = '/main';

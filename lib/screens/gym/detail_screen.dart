@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../models/gym_model.dart';
-import '../services/supabase_service.dart';
+import '../../models/gym_model.dart';
+import '../../services/api_client.dart';
+import '../../services/favorite_service.dart';
 
 class DetailScreen extends StatefulWidget {
   final Gym gym;
@@ -24,10 +25,10 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<void> _checkIfFavorite() async {
-    final user = SupabaseService.client.auth.currentUser;
+    final user = ApiClient.client.auth.currentUser;
     if (user != null) {
       try {
-        final isFav = await SupabaseService.isFavorite(user.id, gym.gymId);
+        final isFav = await FavoriteService.isFavorite(user.id, gym.gymId);
         if (mounted) {
           setState(() {
             _isFavorite = isFav;
@@ -51,7 +52,7 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<void> _toggleFavorite() async {
-    final user = SupabaseService.client.auth.currentUser;
+    final user = ApiClient.client.auth.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -63,7 +64,7 @@ class _DetailScreenState extends State<DetailScreen> {
     }
 
     try {
-      final newFavState = await SupabaseService.toggleFavorite(user.id, gym.gymId);
+      final newFavState = await FavoriteService.toggleFavorite(user.id, gym.gymId);
       if (mounted) {
         setState(() {
           _isFavorite = newFavState;

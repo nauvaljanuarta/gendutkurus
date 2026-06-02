@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import '../models/gym_model.dart';
-import '../services/supabase_service.dart';
+import '../../models/gym_model.dart';
+import '../../services/gym_service.dart';
 import 'detail_screen.dart';
 
 class MapScreen extends StatefulWidget {
@@ -77,8 +77,7 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _loadGyms(Position? userPos) async {
     try {
-      final gyms = await SupabaseService.fetchGyms();
-      // Filter out gyms that don't have valid coordinates
+      final gyms = await GymService.fetchGyms();
       var validGyms = gyms.where((g) => g.latitude != 0.0 && g.longitude != 0.0).toList();
 
       if (userPos != null) {
