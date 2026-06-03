@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../models/gym_model.dart';
 import '../../services/api_client.dart';
 import '../../services/favorite_service.dart';
+import 'detail_map_screen.dart';
 
 class DetailScreen extends StatefulWidget {
   final Gym gym;
@@ -312,7 +313,39 @@ class _DetailScreenState extends State<DetailScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DetailMapScreen(gym: gym),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2979FF),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      icon: const Icon(Icons.navigation),
+                      label: const Text('Rute di Aplikasi'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
                       onPressed: () => _openGoogleMaps(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white24),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
                       icon: const Icon(Icons.location_on),
                       label: const Text('Lihat Lokasi di Google Maps'),
                     ),
