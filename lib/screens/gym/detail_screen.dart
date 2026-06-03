@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/gym_model.dart';
@@ -17,7 +18,7 @@ class _DetailScreenState extends State<DetailScreen> {
   Gym get gym => widget.gym;
   bool _isFavorite = false;
   bool _isCheckingFavorite = true;
-  
+
   // Variabel baru untuk melacak gambar yang sedang dilihat
   int _currentImageIndex = 0;
 
@@ -67,16 +68,21 @@ class _DetailScreenState extends State<DetailScreen> {
     }
 
     try {
-      final newFavState = await FavoriteService.toggleFavorite(user.id, gym.gymId);
+      final newFavState = await FavoriteService.toggleFavorite(
+        user.id,
+        gym.gymId,
+      );
       if (mounted) {
         setState(() {
           _isFavorite = newFavState;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(newFavState
-                ? 'Gym berhasil ditambahkan ke favorit'
-                : 'Gym berhasil dihapus dari favorit'),
+            content: Text(
+              newFavState
+                  ? 'Gym berhasil ditambahkan ke favorit'
+                  : 'Gym berhasil dihapus dari favorit',
+            ),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -128,13 +134,19 @@ class _DetailScreenState extends State<DetailScreen> {
                               height: 24,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.redAccent),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.redAccent,
+                                ),
                               ),
                             )
                           : IconButton(
                               icon: Icon(
-                                _isFavorite ? Icons.favorite : Icons.favorite_border,
-                                color: _isFavorite ? Colors.redAccent : Colors.white60,
+                                _isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: _isFavorite
+                                    ? Colors.redAccent
+                                    : Colors.white60,
                                 size: 28,
                               ),
                               onPressed: _toggleFavorite,
@@ -166,38 +178,40 @@ class _DetailScreenState extends State<DetailScreen> {
                           ),
                         ),
                       ],
-                    //   const SizedBox(width: 16),
-                    //   const Icon(
-                    //     Icons.access_time,
-                    //     color: Colors.white70,
-                    //     size: 18,
-                    //   ),
-                    //   const SizedBox(width: 6),
-                    //   Expanded(
-                    //   child: Text(
-                    //     'Lihat jadwal di bawah',
-                    //     style: const TextStyle(
-                    //       color: Colors.white70, 
-                    //       fontSize: 14, 
-                    //       fontStyle: FontStyle.italic
-                    //     ),
-                    //     overflow: TextOverflow.ellipsis,
-                    //   ),
-                    // ),
-                  ],
-                ),
+                      //   const SizedBox(width: 16),
+                      //   const Icon(
+                      //     Icons.access_time,
+                      //     color: Colors.white70,
+                      //     size: 18,
+                      //   ),
+                      //   const SizedBox(width: 6),
+                      //   Expanded(
+                      //   child: Text(
+                      //     'Lihat jadwal di bawah',
+                      //     style: const TextStyle(
+                      //       color: Colors.white70,
+                      //       fontSize: 14,
+                      //       fontStyle: FontStyle.italic
+                      //     ),
+                      //     overflow: TextOverflow.ellipsis,
+                      //   ),
+                      // ),
+                    ],
+                  ),
                   const SizedBox(height: 20),
                   const Text(
                     'Alamat Lengkap',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w700),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.location_on_outlined,
-                          size: 18, color: Colors.white54),
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 18,
+                        color: Colors.white54,
+                      ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -208,11 +222,17 @@ class _DetailScreenState extends State<DetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  if (gym.phone != null || (gym.website != null && gym.website!.isNotEmpty && gym.website!.toLowerCase() != 'tidak tersedia' && gym.website! != '-')) ...[
+                  if (gym.phone != null ||
+                      (gym.website != null &&
+                          gym.website!.isNotEmpty &&
+                          gym.website!.toLowerCase() != 'tidak tersedia' &&
+                          gym.website! != '-')) ...[
                     const Text(
                       'Kontak',
                       style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w700),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Wrap(
@@ -221,8 +241,7 @@ class _DetailScreenState extends State<DetailScreen> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         if (gym.phone != null)
-                          _InfoChip(
-                              icon: Icons.phone, label: gym.phone!),
+                          _InfoChip(icon: Icons.phone, label: gym.phone!),
                         if (gym.website != null &&
                             gym.website!.isNotEmpty &&
                             gym.website!.toLowerCase() != 'tidak tersedia' &&
@@ -232,17 +251,24 @@ class _DetailScreenState extends State<DetailScreen> {
                             borderRadius: BorderRadius.circular(14),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
+                                  colors: [
+                                    Color(0xFF2979FF),
+                                    Color(0xFF00B0FF),
+                                  ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 borderRadius: BorderRadius.circular(14),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF2979FF).withOpacity(0.3),
+                                    color: const Color(
+                                      0xFF2979FF,
+                                    ).withOpacity(0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   ),
@@ -251,7 +277,11 @@ class _DetailScreenState extends State<DetailScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: const [
-                                  Icon(Icons.language, size: 16, color: Colors.white),
+                                  Icon(
+                                    Icons.language,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
                                   SizedBox(width: 8),
                                   Text(
                                     'Info GYM',
@@ -271,16 +301,14 @@ class _DetailScreenState extends State<DetailScreen> {
                   ],
                   const Text(
                     'Deskripsi',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w700),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     gym.description.isEmpty
                         ? 'Tidak ada deskripsi tersedia.'
                         : gym.description,
-                    style: const TextStyle(
-                        color: Colors.white70, height: 1.5),
+                    style: const TextStyle(color: Colors.white70, height: 1.5),
                   ),
                   const SizedBox(height: 24),
                   _buildElegantOpeningHours(gym.openingHours),
@@ -295,8 +323,11 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.map_outlined,
-                              color: Color(0xFF2979FF), size: 20),
+                          const Icon(
+                            Icons.map_outlined,
+                            color: Color(0xFF2979FF),
+                            size: 20,
+                          ),
                           const SizedBox(width: 10),
                           Text(
                             'Koordinat: ${gym.latitude.toStringAsFixed(4)}, ${gym.longitude.toStringAsFixed(4)}',
@@ -330,20 +361,33 @@ class _DetailScreenState extends State<DetailScreen> {
   // WIDGET JADWAL BUKA (ANTI-MENYAMBUNG 100%)
   // ==========================================
   Widget _buildElegantOpeningHours(String rawHours) {
-    if (rawHours.isEmpty || rawHours.toLowerCase() == 'tidak tersedia' || rawHours == '-') {
+    if (rawHours.isEmpty ||
+        rawHours.toLowerCase() == 'tidak tersedia' ||
+        rawHours == '-') {
       return const SizedBox.shrink(); // Sembunyikan kotak jika tidak ada data
     }
 
     // 1. Trik: Beri pemisah '|' sebelum setiap nama hari agar mudah dipotong
     String formattedText = rawHours;
-    final List<String> days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-    
+    final List<String> days = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
+    ];
+
     for (String day in days) {
       formattedText = formattedText.replaceAll(day, '|$day');
     }
 
     // 2. Potong berdasarkan tanda '|'
-    final List<String> scheduleParts = formattedText.split('|').where((s) => s.isNotEmpty).toList();
+    final List<String> scheduleParts = formattedText
+        .split('|')
+        .where((s) => s.isNotEmpty)
+        .toList();
 
     if (scheduleParts.isEmpty) {
       return Text(rawHours, style: const TextStyle(color: Colors.white70));
@@ -352,7 +396,10 @@ class _DetailScreenState extends State<DetailScreen> {
     List<Widget> scheduleWidgets = [];
     for (String part in scheduleParts) {
       // Cari tau ini hari apa
-      String currentDay = days.firstWhere((d) => part.startsWith(d), orElse: () => '');
+      String currentDay = days.firstWhere(
+        (d) => part.startsWith(d),
+        orElse: () => '',
+      );
       if (currentDay.isEmpty) continue;
 
       // Ambil sisa teks setelah nama hari sebagai jam
@@ -368,16 +415,19 @@ class _DetailScreenState extends State<DetailScreen> {
       } else {
         // Trik Jitu: Ambil SEMUA format jam (contoh: 08.00) dari teks
         final timeRegex = RegExp(r'\d{2}\.\d{2}');
-        final times = timeRegex.allMatches(time).map((m) => m.group(0)!).toList();
-        
+        final times = timeRegex
+            .allMatches(time)
+            .map((m) => m.group(0)!)
+            .toList();
+
         // Jika jumlah angka genap (contoh: 4 angka = 2 sesi buka)
         if (times.isNotEmpty && times.length % 2 == 0) {
           List<String> ranges = [];
           for (int i = 0; i < times.length; i += 2) {
-            ranges.add('${times[i]} - ${times[i+1]}');
+            ranges.add('${times[i]} - ${times[i + 1]}');
           }
           // Gabungkan dengan koma (contoh: 08.00 - 12.00, 16.00 - 21.00)
-          time = ranges.join(', '); 
+          time = ranges.join(', ');
         }
       }
 
@@ -413,7 +463,9 @@ class _DetailScreenState extends State<DetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E), // Warna kotak senada dengan background gelap
+        color: const Color(
+          0xFF1E1E1E,
+        ), // Warna kotak senada dengan background gelap
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),
@@ -465,15 +517,18 @@ class _DetailScreenState extends State<DetailScreen> {
               });
             },
             itemBuilder: (context, index) {
-              return Image.network(
-                gym.imageUrls[index],
+              return CachedNetworkImage(
+                imageUrl: gym.imageUrls[index],
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _buildFallbackGradient(),
+                placeholder: (context, url) => const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                errorWidget: (context, url, error) => _buildFallbackGradient(),
               );
             },
           ),
         ),
-        
+
         // Titik-titik indikator (Dots) di atas gambar
         if (gym.imageUrls.length > 1)
           Positioned(
@@ -487,7 +542,9 @@ class _DetailScreenState extends State<DetailScreen> {
                   width: _currentImageIndex == index ? 24 : 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: _currentImageIndex == index ? const Color(0xFF2979FF) : Colors.white70,
+                    color: _currentImageIndex == index
+                        ? const Color(0xFF2979FF)
+                        : Colors.white70,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -498,7 +555,7 @@ class _DetailScreenState extends State<DetailScreen> {
     );
   }
 
-  // Menampilkan warna warni 
+  // Menampilkan warna warni
   Widget _buildFallbackGradient() {
     return Container(
       height: 220,
@@ -521,14 +578,21 @@ class _DetailScreenState extends State<DetailScreen> {
             const SizedBox(height: 12),
             if (gym.categoryName != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black26,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
                   gym.categoryName!,
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
           ],
@@ -547,45 +611,65 @@ class _DetailScreenState extends State<DetailScreen> {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak dapat membuka website')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat membuka website')),
+        );
       }
     }
   }
 
   Future<void> _openGoogleMaps(BuildContext context) async {
     if (gym.latitude == 0.0 && gym.longitude == 0.0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Koordinat gym tidak tersedia')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Koordinat gym tidak tersedia')),
+      );
       return;
     }
-    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=${gym.latitude},${gym.longitude}');
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${gym.latitude},${gym.longitude}',
+    );
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak dapat membuka Google Maps')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat membuka Google Maps')),
+        );
       }
     }
   }
 
   List<Color> _getCategoryGradient(String? category) {
     switch (category?.toLowerCase()) {
-      case 'gym premium': return [const Color(0xFF6A11CB), const Color(0xFF2575FC)];
-      case 'gym murah': return [const Color(0xFF11998E), const Color(0xFF38EF7D)];
-      case 'gym 24 jam': return [const Color(0xFFFC466B), const Color(0xFF3F5EFB)];
-      case 'fitness wanita': return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
-      case 'crossfit': return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
-      default: return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
+      case 'gym premium':
+        return [const Color(0xFF6A11CB), const Color(0xFF2575FC)];
+      case 'gym murah':
+        return [const Color(0xFF11998E), const Color(0xFF38EF7D)];
+      case 'gym 24 jam':
+        return [const Color(0xFFFC466B), const Color(0xFF3F5EFB)];
+      case 'fitness wanita':
+        return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
+      case 'crossfit':
+        return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
+      default:
+        return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
     }
   }
 
   IconData _getCategoryIcon(String? category) {
     switch (category?.toLowerCase()) {
-      case 'gym premium': return Icons.fitness_center;
-      case 'gym murah': return Icons.attach_money;
-      case 'gym 24 jam': return Icons.schedule;
-      case 'fitness wanita': return Icons.female;
-      case 'crossfit': return Icons.sports_gymnastics;
-      default: return Icons.fitness_center;
+      case 'gym premium':
+        return Icons.fitness_center;
+      case 'gym murah':
+        return Icons.attach_money;
+      case 'gym 24 jam':
+        return Icons.schedule;
+      case 'fitness wanita':
+        return Icons.female;
+      case 'crossfit':
+        return Icons.sports_gymnastics;
+      default:
+        return Icons.fitness_center;
     }
   }
 }
@@ -609,7 +693,10 @@ class _InfoChip extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: const Color(0xFF2979FF)),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
         ],
       ),
     );

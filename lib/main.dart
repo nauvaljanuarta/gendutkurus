@@ -1,4 +1,6 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/main_navigation.dart';
 import 'screens/gym/map_screen.dart';
@@ -13,7 +15,12 @@ Future<void> main() async {
     anonKey: 'sb_publishable_hO6pqJLJ4StR_QXNPX4ArA_ueeW_dyn',
   );
 
-  runApp(const GendutKurusApp());
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (context) => const GendutKurusApp(),
+    ),
+  );
 }
 
 class GendutKurusApp extends StatelessWidget {
@@ -23,6 +30,8 @@ class GendutKurusApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Gendut Kurus',
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark(),
       initialRoute: SplashScreen.routeName,

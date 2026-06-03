@@ -19,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
-  int? _selectedCategoryId; // null = Semua
+  int? _selectedCategoryId;
   List<Gym> _gyms = [];
   List<Category> _categories = [];
   bool _isLoading = true;
@@ -43,14 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
         CategoryService.fetchCategories(),
       ]);
 
-      // DEBUG: cek isi imageUrls dari Supabase
-      final loadedGyms = results[0] as List<Gym>;
-      for (final g in loadedGyms) {
-        print('GYM: ${g.name} | imageUrls: ${g.imageUrls}');
-      }
-
       setState(() {
-        _gyms = loadedGyms;
+        _gyms = results[0] as List<Gym>;
         _categories = results[1] as List<Category>;
         _isLoading = false;
       });
@@ -65,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Gym> get _filteredGyms {
     return _gyms.where((gym) {
       final query = _searchQuery.toLowerCase();
-      final matchesSearch = gym.name.toLowerCase().contains(query) ||
+      final matchesSearch =
+          gym.name.toLowerCase().contains(query) ||
           gym.address.toLowerCase().contains(query);
       final matchesCategory =
           _selectedCategoryId == null || gym.categoryId == _selectedCategoryId;
@@ -77,40 +72,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Gym & Fitness Surabaya',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () {},
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF252525),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(
-                        Icons.notifications_none,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
+              _buildHeader(),
+              const SizedBox(height: 18),
               AppSearchBar(
                 onChanged: (value) {
                   setState(() {
@@ -118,78 +86,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2979FF),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Promo Fitness',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                    SizedBox(height: 14),
-                    Text(
-                      'Diskon keanggotaan bulan ini',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Gabung sekarang dan dapatkan paket latihan lengkap dengan trainer profesional.',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Category chips — dari Supabase
-              SizedBox(
-                height: 46,
-                child: _categories.isEmpty
-                    ? const SizedBox.shrink()
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _categories.length + 1, // +1 untuk "Semua"
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return CategoryChip(
-                              label: 'Semua',
-                              isSelected: _selectedCategoryId == null,
-                              onTap: () {
-                                setState(() {
-                                  _selectedCategoryId = null;
-                                });
-                              },
-                            );
-                          }
-                          final category = _categories[index - 1];
-                          return CategoryChip(
-                            label: category.name,
-                            isSelected:
-                                _selectedCategoryId == category.id,
-                            onTap: () {
-                              setState(() {
-                                _selectedCategoryId = category.id;
-                              });
-                            },
-                          );
-                        },
-                      ),
-              ),
-              const SizedBox(height: 20),
-              // Gym list — dari Supabase
-              Expanded(
-                child: _buildGymList(),
-              ),
+              const SizedBox(height: 16),
+              _buildPromoBanner(),
+              const SizedBox(height: 16),
+              _buildCategoryChips(),
+              const SizedBox(height: 16),
+              ..._buildGymItems(),
             ],
           ),
         ),
@@ -197,73 +99,180 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGymList() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white38, size: 48),
-            const SizedBox(height: 12),
-            Text(
-              'Gagal memuat data',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _error!,
-              style: const TextStyle(color: Colors.white38, fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Coba Lagi'),
-            ),
-          ],
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        const Expanded(
+          child: Text(
+            'Gym & Fitness Surabaya',
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+          ),
         ),
-      );
-    }
-
-    final gyms = _filteredGyms;
-
-    if (gyms.isEmpty) {
-      return const Center(
-        child: Text(
-          'Tidak ada gym yang sesuai.',
-          style: TextStyle(color: Colors.white70),
+        InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {},
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF252525),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.notifications_none, color: Colors.white),
+          ),
         ),
-      );
-    }
+      ],
+    );
+  }
 
-    return RefreshIndicator(
-      onRefresh: _loadData,
+  Widget _buildPromoBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2979FF),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Promo Fitness',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Diskon keanggotaan bulan ini',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            'Paket latihan lengkap dengan trainer profesional.',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryChips() {
+    if (_categories.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 46,
       child: ListView.builder(
-        itemCount: gyms.length,
+        scrollDirection: Axis.horizontal,
+        itemCount: _categories.length + 1,
         itemBuilder: (context, index) {
-          final gym = gyms[index];
-          return GymCard(
-            gym: gym,
+          if (index == 0) {
+            return CategoryChip(
+              label: 'Semua',
+              isSelected: _selectedCategoryId == null,
+              onTap: () {
+                setState(() {
+                  _selectedCategoryId = null;
+                });
+              },
+            );
+          }
+
+          final category = _categories[index - 1];
+          return CategoryChip(
+            label: category.name,
+            isSelected: _selectedCategoryId == category.id,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => DetailScreen(gym: gym),
-                ),
-              );
+              setState(() {
+                _selectedCategoryId = category.id;
+              });
             },
           );
         },
       ),
     );
+  }
+
+  List<Widget> _buildGymItems() {
+    if (_isLoading) {
+      return const [
+        SizedBox(
+          height: 180,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ];
+    }
+
+    if (_error != null) {
+      return [
+        SizedBox(
+          height: 260,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  color: Colors.white38,
+                  size: 48,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Gagal memuat data',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _error!,
+                  style: const TextStyle(color: Colors.white38, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _loadData,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Coba Lagi'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ];
+    }
+
+    final gyms = _filteredGyms;
+
+    if (gyms.isEmpty) {
+      return const [
+        SizedBox(
+          height: 180,
+          child: Center(
+            child: Text(
+              'Tidak ada gym yang sesuai.',
+              style: TextStyle(color: Colors.white70),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    return gyms
+        .map(
+          (gym) => GymCard(
+            gym: gym,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => DetailScreen(gym: gym)),
+              );
+            },
+          ),
+        )
+        .toList();
   }
 }
