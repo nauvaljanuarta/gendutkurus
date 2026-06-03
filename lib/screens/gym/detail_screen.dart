@@ -27,6 +27,9 @@ class _DetailScreenState extends State<DetailScreen> {
   // Variabel baru untuk melacak gambar yang sedang dilihat
   int _currentImageIndex = 0;
 
+  // Rate limiting untuk website button
+  bool _isWebsiteOnCooldown = false;
+
   @override
   void initState() {
     super.initState();
@@ -271,7 +274,7 @@ class _DetailScreenState extends State<DetailScreen> {
                             gym.website!.toLowerCase() != 'tidak tersedia' &&
                             gym.website! != '-')
                           InkWell(
-                            onTap: () => _openWebsite(context),
+                            onTap: _isWebsiteOnCooldown ? null : () => _openWebsite(context),
                             borderRadius: BorderRadius.circular(14),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -714,20 +717,37 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<void> _openWebsite(BuildContext context) async {
+    // Rate limit: prevent rapid-fire taps
+    if (_isWebsiteOnCooldown) return;
+    setState(() {
+      _isWebsiteOnCooldown = true;
+    });
+
     String urlString = gym.website!;
     if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
       urlString = 'https://$urlString';
     }
     final url = Uri.parse(urlString);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak dapat membuka website')),
-        );
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak dapat membuka website')));
+        }
       }
-    }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal membuka website')));
+
+    // Cooldown 3 detik
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _isWebsiteOnCooldown = false;
+        });
+      }
+    });
   }
 
   Future<void> _openGoogleMaps(BuildContext context) async {
