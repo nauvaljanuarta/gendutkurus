@@ -76,124 +76,175 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Gym & Fitness Surabaya',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? _buildGymList() // shows error state
+              : CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    // ── Collapsible Header ──
+                    SliverAppBar(
+                      expandedHeight: 300,
+                      collapsedHeight: 64,
+                      toolbarHeight: 64,
+                      pinned: true,
+                      floating: false,
+                      backgroundColor: const Color(0xFF121212),
+                      surfaceTintColor: Colors.transparent,
+                      title: const Text(
+                        'Gym & Fitness',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      actions: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () {},
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF252525),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.notifications_none,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 20, right: 20, top: 64, bottom: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AppSearchBar(
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _searchQuery = value;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                Expanded(
+                                  child: Container(
+                                    width: double.infinity,
+                                    clipBehavior: Clip.hardEdge,
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFF2979FF),
+                                          Color(0xFF00B0FF)
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: const [
+                                        Text(
+                                          'Promo Fitness',
+                                          style: TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 12),
+                                        ),
+                                        SizedBox(height: 12),
+                                        Text(
+                                          'Diskon keanggotaan bulan ini',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'Gabung sekarang dan dapatkan paket latihan lengkap.',
+                                          style: TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 12),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () {},
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF252525),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(
-                        Icons.notifications_none,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              AppSearchBar(
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2979FF),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Promo Fitness',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                    SizedBox(height: 14),
-                    Text(
-                      'Diskon keanggotaan bulan ini',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Gabung sekarang dan dapatkan paket latihan lengkap dengan trainer profesional.',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Category chips — dari Supabase
-              SizedBox(
-                height: 46,
-                child: _categories.isEmpty
-                    ? const SizedBox.shrink()
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _categories.length + 1, // +1 untuk "Semua"
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return CategoryChip(
-                              label: 'Semua',
-                              isSelected: _selectedCategoryId == null,
-                              onTap: () {
-                                setState(() {
-                                  _selectedCategoryId = null;
-                                });
-                              },
-                            );
-                          }
-                          final category = _categories[index - 1];
-                          return CategoryChip(
-                            label: category.name,
-                            isSelected:
-                                _selectedCategoryId == category.id,
-                            onTap: () {
-                              setState(() {
-                                _selectedCategoryId = category.id;
-                              });
-                            },
-                          );
+
+                    // ── Pinned Category Chips ──
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _CategoryHeaderDelegate(
+                        categories: _categories,
+                        selectedCategoryId: _selectedCategoryId,
+                        onCategorySelected: (id) {
+                          setState(() {
+                            _selectedCategoryId = id;
+                          });
                         },
                       ),
-              ),
-              const SizedBox(height: 20),
-              // Gym list — dari Supabase
-              Expanded(
-                child: _buildGymList(),
-              ),
-            ],
-          ),
-        ),
-      ),
+                    ),
+
+                    // ── Gym List ──
+                    _filteredGyms.isEmpty
+                        ? const SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Text(
+                                'Tidak ada gym yang sesuai.',
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                            ),
+                          )
+                        : SliverPadding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 8),
+                            sliver: SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final gym = _filteredGyms[index];
+                                  return GymCard(
+                                    gym: gym,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              DetailScreen(gym: gym),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                                childCount: _filteredGyms.length,
+                              ),
+                            ),
+                          ),
+                  ],
+                ),
     );
   }
 
@@ -265,5 +316,60 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     );
+  }
+}
+
+// ── Pinned Category Header Delegate ──
+class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final List<Category> categories;
+  final int? selectedCategoryId;
+  final ValueChanged<int?> onCategorySelected;
+
+  _CategoryHeaderDelegate({
+    required this.categories,
+    required this.selectedCategoryId,
+    required this.onCategorySelected,
+  });
+
+  @override
+  double get minExtent => 58;
+  @override
+  double get maxExtent => 58;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: const Color(0xFF121212),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: categories.isEmpty
+          ? const SizedBox.shrink()
+          : ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: categories.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return CategoryChip(
+                    label: 'Semua',
+                    isSelected: selectedCategoryId == null,
+                    onTap: () => onCategorySelected(null),
+                  );
+                }
+                final category = categories[index - 1];
+                return CategoryChip(
+                  label: category.name,
+                  isSelected: selectedCategoryId == category.id,
+                  onTap: () => onCategorySelected(category.id),
+                );
+              },
+            ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _CategoryHeaderDelegate oldDelegate) {
+    return oldDelegate.selectedCategoryId != selectedCategoryId ||
+        oldDelegate.categories != categories;
   }
 }
