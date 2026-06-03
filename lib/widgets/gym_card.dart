@@ -82,20 +82,34 @@ class GymCard extends StatelessWidget {
                           ),
                         ),
                       const Spacer(),
-                      const Icon(
-                        Icons.access_time,
-                        size: 14,
-                        color: Colors.white54,
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          gym.openingHours,
-                          style: const TextStyle(
-                            color: Colors.white54,
-                            fontSize: 12,
-                          ),
-                          overflow: TextOverflow.ellipsis,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.access_time,
+                              size: 12,
+                              color: Colors.white70,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                _getShortHours(gym.openingHours),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -208,5 +222,20 @@ class GymCard extends StatelessWidget {
       case 'crossfit': return Icons.sports_gymnastics;
       default: return Icons.fitness_center;
     }
+  }
+
+  String _getShortHours(String rawHours) {
+    if (rawHours.isEmpty || rawHours.toLowerCase() == 'tidak tersedia' || rawHours == '-') {
+      return 'Tidak tersedia';
+    }
+    if (rawHours.toLowerCase().contains('24 jam')) return 'Buka 24 Jam';
+
+    // Cari angka jam pertama (contoh: 06.0022.00 -> 06.00 - 22.00)
+    final match = RegExp(r'(\d{2}\.\d{2})(\d{2}\.\d{2})').firstMatch(rawHours);
+    if (match != null) {
+      return '${match.group(1)} - ${match.group(2)}';
+    }
+    
+    return 'Lihat Detail';
   }
 }
