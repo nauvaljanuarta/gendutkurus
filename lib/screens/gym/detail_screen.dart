@@ -4,6 +4,8 @@ import '../../models/gym_model.dart';
 import '../../services/api_client.dart';
 import '../../services/favorite_service.dart';
 import 'detail_map_screen.dart';
+import '../../services/review_service.dart';
+import '../../models/review_model.dart';
 
 class DetailScreen extends StatefulWidget {
   final Gym gym;
@@ -16,6 +18,8 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   Gym get gym => widget.gym;
+  List<Review> _reviews = [];
+  bool _isLoadingReviews = true;
   bool _isFavorite = false;
   bool _isCheckingFavorite = true;
   
@@ -29,6 +33,25 @@ class _DetailScreenState extends State<DetailScreen> {
   void initState() {
     super.initState();
     _checkIfFavorite();
+    _fetchReviews();
+  }
+
+  Future<void> _fetchReviews() async {
+    if (!mounted) return;
+    setState(() => _isLoadingReviews = true);
+    try {
+      final reviews = await ReviewService.fetchReviews(gym.gymId);
+      if (mounted) {
+        setState(() {
+          _reviews = reviews;
+          _isLoadingReviews = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingReviews = false);
+      }
+    }
   }
 
   Future<void> _checkIfFavorite() async {
@@ -351,9 +374,65 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
                       icon: const Icon(Icons.location_on),
                       label: const Text('Lihat Lokasi di Google Maps'),
+                    ), 
+                  ),
+                  const SizedBox(height: 16),
+                      // 1. TOMBOL GOOGLE MAPS
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _openGoogleMaps(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white24),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      icon: const Icon(Icons.location_on),
+                      label: const Text('Lihat Lokasi di Google Maps'),
+                    ), // <-- Perhatikan tutup kurung ini
+                  ),
+
+                  // 2. JARAK ANTARA KEDUA TOMBOL
+                  const SizedBox(height: 16),
+
+                  // 3. TOMBOL TULIS ULASAN
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: Color(0xFF2979FF), width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => _showAddReviewDialog(context),
+                      icon: const Icon(Icons.rate_review, color: Color(0xFF2979FF)),
+                      label: const Text(
+                        'Tulis Ulasan Anda',
+                        style: TextStyle(color: Color(0xFF2979FF), fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 40),
+                  
+                  // =====================================
+                  // TAMBAHKAN BAGIAN INI DI SINI
+                  // =====================================
+                  const SizedBox(height: 32),
+                  const Text(
+                    'Ulasan Pengunjung',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildReviewList(), // <--- MEMANGGIL DAFTAR REVIEW
+                  // =====================================
+
+                  // JARAK BAWAH
+                  const SizedBox(height: 40),
                 ],
+                
               ),
             ),
           ],
@@ -644,6 +723,219 @@ class _DetailScreenState extends State<DetailScreen> {
       case 'crossfit': return Icons.sports_gymnastics;
       default: return Icons.fitness_center;
     }
+  }
+
+  // Fungsi untuk menampilkan Pop-up form review
+  void _showAddReviewDialog(BuildContext context) {
+    final user = ApiClient.client.auth.currentUser;
+    
+    // Cek apakah user sudah login
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan login terlebih dahulu untuk memberi ulasan!')),
+      );
+      return;
+    }
+
+    int selectedRating = 5;
+    final TextEditingController commentController = TextEditingController();
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        // StatefulBuilder digunakan agar bintang bisa diklik dan berubah warna di dalam dialog
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E1E1E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Text('Tulis Ulasan', style: TextStyle(color: Colors.white)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Barisan Bintang Rating
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        icon: Icon(
+                          index < selectedRating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                          size: 32,
+                        ),
+                        onPressed: () {
+                          setStateDialog(() {
+                            selectedRating = index + 1;
+                          });
+                        },
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                  // Kolom Teks Komentar
+                  TextField(
+                    controller: commentController,
+                    maxLines: 3,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Bagaimana pengalaman Anda di gym ini?',
+                      hintStyle: const TextStyle(color: Colors.white38),
+                      filled: true,
+                      fillColor: Colors.black26,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSubmitting ? null : () => Navigator.pop(context),
+                  child: const Text('Batal', style: TextStyle(color: Colors.white54)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2979FF),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          if (commentController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Komentar tidak boleh kosong')),
+                            );
+                            return;
+                          }
+
+                          setStateDialog(() => isSubmitting = true);
+
+                          bool success = false;
+                          try {
+                            // Kirim ke database
+                            await ReviewService.addReview(
+                              gymId: gym.gymId, 
+                              userId: user.id,
+                              rating: selectedRating,
+                              comment: commentController.text.trim(),
+                            );
+                            success = true;
+                          } catch (e) {
+                            success = false;
+                          }
+
+                          setStateDialog(() => isSubmitting = false);
+
+                          if (success) {
+                            if (context.mounted) {
+                              Navigator.pop(context); // Tutup dialog
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Ulasan berhasil dikirim!')),
+                              );
+                              _fetchReviews();
+                            }
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Gagal mengirim ulasan')),
+                              );
+                            }
+                          }
+                        },
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 16, height: 16, 
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('Kirim', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ==========================================
+  // WIDGET UNTUK MENAMPILKAN DAFTAR REVIEW
+  // ==========================================
+  Widget _buildReviewList() {
+    // Jika masih loading
+    if (_isLoadingReviews) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF2979FF)));
+    }
+
+    // Jika belum ada review sama sekali
+    if (_reviews.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: const Text(
+          'Belum ada ulasan. Jadilah yang pertama mengulas gym ini!',
+          style: TextStyle(color: Colors.white70, fontStyle: FontStyle.italic),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    // Jika ada review, tampilkan daftarnya
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _reviews.map((review) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Colors.white24,
+                    child: Icon(Icons.person, size: 16, color: Colors.white),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Pengguna', // Identitas default
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  const Spacer(),
+                  // Deretan Bintang sesuai rating dari database
+                  Row(
+                    children: List.generate(5, (index) {
+                      return Icon(
+                        index < review.rating ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 14,
+                      );
+                    }),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                review.comment ?? '',
+                style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
   }
 }
 
