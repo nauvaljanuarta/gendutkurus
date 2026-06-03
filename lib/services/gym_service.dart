@@ -5,7 +5,7 @@ class GymService {
   static Future<List<Gym>> fetchGyms() async {
     final response = await ApiClient.client
         .from('gyms')
-        .select('*, categories(name, icon)')
+        .select('*, categories(name, icon), gym_images(image_url)')
         .order('name', ascending: true);
 
     return (response as List)
@@ -17,7 +17,7 @@ class GymService {
   static Future<List<Gym>> fetchGymsByCategory(int categoryId) async {
     final response = await ApiClient.client
         .from('gyms')
-        .select('*, categories(name, icon)')
+        .select('*, categories(name, icon), gym_images(image_url)')
         .eq('category_id', categoryId)
         .order('name', ascending: true);
 
@@ -30,7 +30,7 @@ class GymService {
   static Future<List<Gym>> searchGyms(String query) async {
     final response = await ApiClient.client
         .from('gyms')
-        .select('*, categories(name, icon)')
+        .select('*, categories(name, icon), gym_images(image_url)')
         .or('name.ilike.%$query%,address.ilike.%$query%')
         .order('name', ascending: true);
 
@@ -43,7 +43,7 @@ class GymService {
   static Future<Gym?> fetchGymById(int gymId) async {
     final response = await ApiClient.client
         .from('gyms')
-        .select('*, categories(name, icon)')
+        .select('*, categories(name, icon), gym_images(image_url)')
         .eq('gym_id', gymId)
         .maybeSingle();
 

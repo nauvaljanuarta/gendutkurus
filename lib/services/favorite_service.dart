@@ -6,7 +6,7 @@ class FavoriteService {
   static Future<List<Gym>> fetchFavorites(String userId) async {
     final response = await ApiClient.client
         .from('favorites')
-        .select('gym_id, gyms(*, categories(name, icon))')
+        .select('gym_id, gyms(*, categories(name, icon), gym_images(image_url))')
         .eq('user_id', userId);
 
     return (response as List)

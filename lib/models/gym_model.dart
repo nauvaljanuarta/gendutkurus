@@ -11,6 +11,8 @@ class Gym {
   final double longitude;
   final int categoryId;
   final String description;
+  final List<String> imageUrls;
+  
   // Dari join tabel categories
   final String? categoryName;
   final String? categoryIcon;
@@ -28,11 +30,17 @@ class Gym {
     required this.longitude,
     required this.categoryId,
     required this.description,
+    required this.imageUrls,
     this.categoryName,
     this.categoryIcon,
   });
 
   factory Gym.fromJson(Map<String, dynamic> json) {
+    var imageList = json['gym_images'] as List<dynamic>? ?? [];
+    List<String> parsedImages = imageList
+        .map((img) => img['image_url'] as String)
+        .toList();
+
     return Gym(
       gymId: json['gym_id'] as int,
       name: json['name'] as String? ?? '',
@@ -46,6 +54,7 @@ class Gym {
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       categoryId: json['category_id'] as int? ?? 0,
       description: json['description'] as String? ?? '',
+      imageUrls: parsedImages,
       categoryName: json['categories'] != null
           ? json['categories']['name'] as String?
           : null,
@@ -69,6 +78,7 @@ class Gym {
       'longitude': longitude,
       'category_id': categoryId,
       'description': description,
+      'gym_images': imageUrls.map((url) => {'image_url': url}).toList(),
     };
   }
 }
