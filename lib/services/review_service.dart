@@ -18,12 +18,14 @@ class ReviewService {
   /// Tambah review
   static Future<void> addReview({
     required String userId,
+    required String userName,
     required int gymId,
     required int rating,
     required String comment,
   }) async {
     await ApiClient.client.from('reviews').insert({
       'user_id': userId,
+      'user_name': userName,
       'gym_id': gymId,
       'rating': rating,
       'comment': comment,

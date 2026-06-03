@@ -813,12 +813,16 @@ class _DetailScreenState extends State<DetailScreen> {
 
                           setStateDialog(() => isSubmitting = true);
 
+                          // Tangkap nama user yang sedang login
+                          String currentUserName = user.userMetadata?['full_name'] as String? ?? 'Pengguna';
+
                           bool success = false;
                           try {
                             // Kirim ke database
                             await ReviewService.addReview(
                               gymId: gym.gymId, 
                               userId: user.id,
+                              userName: currentUserName, // <-- JANGAN LUPA TAMBAHKAN INI
                               rating: selectedRating,
                               comment: commentController.text.trim(),
                             );
@@ -830,19 +834,15 @@ class _DetailScreenState extends State<DetailScreen> {
                           setStateDialog(() => isSubmitting = false);
 
                           if (success) {
-                            if (context.mounted) {
-                              Navigator.pop(context); // Tutup dialog
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Ulasan berhasil dikirim!')),
-                              );
-                              _fetchReviews();
-                            }
+                            Navigator.pop(context); // Tutup dialog
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Ulasan berhasil dikirim!')),
+                            );
+                            _fetchReviews(); // Refresh daftar review
                           } else {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Gagal mengirim ulasan')),
-                              );
-                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Gagal mengirim ulasan')),
+                            );
                           }
                         },
                   child: isSubmitting
@@ -909,12 +909,11 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: Icon(Icons.person, size: 16, color: Colors.white),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Pengguna', // Identitas default
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  Text(
+                    review.userName, 
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const Spacer(),
-                  // Deretan Bintang sesuai rating dari database
                   Row(
                     children: List.generate(5, (index) {
                       return Icon(
