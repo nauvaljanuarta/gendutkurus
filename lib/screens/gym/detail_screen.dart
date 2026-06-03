@@ -166,22 +166,26 @@ class _DetailScreenState extends State<DetailScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(width: 16),
-                      const Icon(
-                        Icons.access_time,
-                        color: Colors.white70,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          gym.openingHours,
-                          style: const TextStyle(color: Colors.white70),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
+                    //   const SizedBox(width: 16),
+                    //   const Icon(
+                    //     Icons.access_time,
+                    //     color: Colors.white70,
+                    //     size: 18,
+                    //   ),
+                    //   const SizedBox(width: 6),
+                    //   Expanded(
+                    //   child: Text(
+                    //     'Lihat jadwal di bawah',
+                    //     style: const TextStyle(
+                    //       color: Colors.white70, 
+                    //       fontSize: 14, 
+                    //       fontStyle: FontStyle.italic
+                    //     ),
+                    //     overflow: TextOverflow.ellipsis,
+                    //   ),
+                    // ),
+                  ],
+                ),
                   const SizedBox(height: 20),
                   const Text(
                     'Alamat Lengkap',
@@ -278,6 +282,8 @@ class _DetailScreenState extends State<DetailScreen> {
                     style: const TextStyle(
                         color: Colors.white70, height: 1.5),
                   ),
+                  const SizedBox(height: 24),
+                  _buildElegantOpeningHours(gym.openingHours),
                   const SizedBox(height: 12),
                   if (gym.latitude != 0.0 && gym.longitude != 0.0)
                     Container(
@@ -316,6 +322,123 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // WIDGET JADWAL BUKA (ANTI-MENYAMBUNG 100%)
+  // ==========================================
+  Widget _buildElegantOpeningHours(String rawHours) {
+    if (rawHours.isEmpty || rawHours.toLowerCase() == 'tidak tersedia' || rawHours == '-') {
+      return const SizedBox.shrink(); // Sembunyikan kotak jika tidak ada data
+    }
+
+    // 1. Trik: Beri pemisah '|' sebelum setiap nama hari agar mudah dipotong
+    String formattedText = rawHours;
+    final List<String> days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    
+    for (String day in days) {
+      formattedText = formattedText.replaceAll(day, '|$day');
+    }
+
+    // 2. Potong berdasarkan tanda '|'
+    final List<String> scheduleParts = formattedText.split('|').where((s) => s.isNotEmpty).toList();
+
+    if (scheduleParts.isEmpty) {
+      return Text(rawHours, style: const TextStyle(color: Colors.white70));
+    }
+
+    List<Widget> scheduleWidgets = [];
+    for (String part in scheduleParts) {
+      // Cari tau ini hari apa
+      String currentDay = days.firstWhere((d) => part.startsWith(d), orElse: () => '');
+      if (currentDay.isEmpty) continue;
+
+      // Ambil sisa teks setelah nama hari sebagai jam
+      String time = part.substring(currentDay.length).trim();
+
+      bool isClosed = time.toLowerCase().contains('tutup');
+      bool is24Hours = time.toLowerCase().contains('24 jam');
+
+      if (isClosed) {
+        time = 'Tutup';
+      } else if (is24Hours) {
+        time = 'Buka 24 Jam';
+      } else {
+        // Trik Jitu: Ambil SEMUA format jam (contoh: 08.00) dari teks
+        final timeRegex = RegExp(r'\d{2}\.\d{2}');
+        final times = timeRegex.allMatches(time).map((m) => m.group(0)!).toList();
+        
+        // Jika jumlah angka genap (contoh: 4 angka = 2 sesi buka)
+        if (times.isNotEmpty && times.length % 2 == 0) {
+          List<String> ranges = [];
+          for (int i = 0; i < times.length; i += 2) {
+            ranges.add('${times[i]} - ${times[i+1]}');
+          }
+          // Gabungkan dengan koma (contoh: 08.00 - 12.00, 16.00 - 21.00)
+          time = ranges.join(', '); 
+        }
+      }
+
+      scheduleWidgets.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                currentDay,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                time.isEmpty ? 'Tidak ada data' : time,
+                style: TextStyle(
+                  color: isClosed ? Colors.redAccent : Colors.white70,
+                  fontSize: 14,
+                  fontWeight: isClosed ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Tampilan Kotak Kartu (Card) Elegan
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E), // Warna kotak senada dengan background gelap
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.calendar_month, color: Color(0xFF2979FF), size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Jadwal Operasional',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: Colors.white10, height: 1),
+          const SizedBox(height: 16),
+          ...scheduleWidgets,
+        ],
       ),
     );
   }
