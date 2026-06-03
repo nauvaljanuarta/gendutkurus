@@ -70,15 +70,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     'positron': 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   };
 
-  // Category Filtering
-  String _selectedCategory = 'Semua';
-  final List<String> _categories = [
-    'Semua',
-    'Gym Premium',
-    'Gym Murah',
-    'Gym 24 Jam',
-    'Crossfit',
-  ];
+  // Search Filtering
+  String _mapSearchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -91,6 +85,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     _positionSubscription?.cancel();
     _mapMoveController?.dispose();
     _mapController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -99,10 +94,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       return [_selectedGym!];
     }
     List<Gym> gymsList = _allGyms;
-    if (_selectedCategory != 'Semua') {
+    if (_mapSearchQuery.isNotEmpty) {
+      final query = _mapSearchQuery.toLowerCase();
       gymsList = _allGyms
           .where((gym) =>
-              gym.categoryName?.toLowerCase() == _selectedCategory.toLowerCase())
+              gym.name.toLowerCase().contains(query) ||
+              gym.address.toLowerCase().contains(query))
           .toList();
     }
     if (gymsList.length > 15) {
@@ -457,73 +454,65 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                   ],
                 ),
 
-          // 2. Floating Top Bar: Gym Count & Category Filter Pills
+          // 2. Floating Top Bar: Search Field
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             left: 16,
-            right: 16,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Horizontal Filter Pills Scroll view
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    children: _categories.map((category) {
-                      final isSelected = _selectedCategory == category;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                            child: InkWell(
-                              onTap: () {
+            right: 72,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      width: 1,
+                    ),
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() {
+                        _mapSearchQuery = value;
+                      });
+                    },
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'Cari gym...',
+                      hintStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 14,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 20,
+                      ),
+                      suffixIcon: _mapSearchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.close,
+                                color: Colors.white.withValues(alpha: 0.5),
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
                                 setState(() {
-                                  _selectedCategory = category;
-                                  // Clear selected gym if not matching category
-                                  if (_selectedGym != null && category != 'Semua') {
-                                    if (_selectedGym!.categoryName != category) {
-                                      _clearRoute();
-                                    }
-                                  }
+                                  _mapSearchQuery = '';
                                 });
                               },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? const Color(0xFF2979FF)
-                                      : Colors.black.withValues(alpha: 0.5),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? Colors.transparent
-                                        : Colors.white.withValues(alpha: 0.1),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  category,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.white70,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                    ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
 
