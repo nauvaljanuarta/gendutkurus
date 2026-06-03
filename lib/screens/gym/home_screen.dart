@@ -71,56 +71,135 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadData,
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 18),
-              AppSearchBar(
-                onChanged: (value) {
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 300,
+              collapsedHeight: 64,
+              toolbarHeight: 64,
+              pinned: true,
+              floating: false,
+              backgroundColor: const Color(0xFF121212),
+              surfaceTintColor: Colors.transparent,
+              title: const Text(
+                'Gym & Fitness',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {},
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF252525),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.notifications_none,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 64,
+                      bottom: 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppSearchBar(
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        Expanded(child: _buildPromoBanner()),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _CategoryHeaderDelegate(
+                categories: _categories,
+                selectedCategoryId: _selectedCategoryId,
+                onCategorySelected: (id) {
                   setState(() {
-                    _searchQuery = value;
+                    _selectedCategoryId = id;
                   });
                 },
               ),
-              const SizedBox(height: 16),
-              _buildPromoBanner(),
-              const SizedBox(height: 16),
-              _buildCategoryChips(),
-              const SizedBox(height: 16),
-              ..._buildGymItems(),
-            ],
-          ),
+            ),
+            if (_isLoading)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_error != null)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _buildErrorState(),
+              )
+            else if (_filteredGyms.isEmpty)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Text(
+                    'Tidak ada gym yang sesuai.',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final gym = _filteredGyms[index];
+                    return GymCard(
+                      gym: gym,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DetailScreen(gym: gym),
+                          ),
+                        );
+                      },
+                    );
+                  }, childCount: _filteredGyms.length),
+                ),
+              ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        const Expanded(
-          child: Text(
-            'Gym & Fitness Surabaya',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-          ),
-        ),
-        InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {},
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF252525),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.notifications_none, color: Colors.white),
-          ),
-        ),
-      ],
     );
   }
 
@@ -129,11 +208,16 @@ class _HomeScreenState extends State<HomeScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF2979FF),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             'Promo Fitness',
@@ -152,127 +236,105 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             'Paket latihan lengkap dengan trainer profesional.',
             style: TextStyle(color: Colors.white70, fontSize: 13),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryChips() {
-    if (_categories.isEmpty) return const SizedBox.shrink();
-
-    return SizedBox(
-      height: 46,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _categories.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return CategoryChip(
-              label: 'Semua',
-              isSelected: _selectedCategoryId == null,
-              onTap: () {
-                setState(() {
-                  _selectedCategoryId = null;
-                });
-              },
-            );
-          }
-
-          final category = _categories[index - 1];
-          return CategoryChip(
-            label: category.name,
-            isSelected: _selectedCategoryId == category.id,
-            onTap: () {
-              setState(() {
-                _selectedCategoryId = category.id;
-              });
-            },
-          );
-        },
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white38, size: 48),
+            const SizedBox(height: 12),
+            const Text(
+              'Gagal memuat data',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: const TextStyle(color: Colors.white38, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  List<Widget> _buildGymItems() {
-    if (_isLoading) {
-      return const [
-        SizedBox(
-          height: 180,
-          child: Center(child: CircularProgressIndicator()),
-        ),
-      ];
-    }
+class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final List<Category> categories;
+  final int? selectedCategoryId;
+  final ValueChanged<int?> onCategorySelected;
 
-    if (_error != null) {
-      return [
-        SizedBox(
-          height: 260,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.error_outline,
-                  color: Colors.white38,
-                  size: 48,
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Gagal memuat data',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _error!,
-                  style: const TextStyle(color: Colors.white38, fontSize: 12),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: _loadData,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Coba Lagi'),
-                ),
-              ],
+  _CategoryHeaderDelegate({
+    required this.categories,
+    required this.selectedCategoryId,
+    required this.onCategorySelected,
+  });
+
+  @override
+  double get minExtent => 58;
+
+  @override
+  double get maxExtent => 58;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: const Color(0xFF121212),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: categories.isEmpty
+          ? const SizedBox.shrink()
+          : ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: categories.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return CategoryChip(
+                    label: 'Semua',
+                    isSelected: selectedCategoryId == null,
+                    onTap: () => onCategorySelected(null),
+                  );
+                }
+
+                final category = categories[index - 1];
+                return CategoryChip(
+                  label: category.name,
+                  isSelected: selectedCategoryId == category.id,
+                  onTap: () => onCategorySelected(category.id),
+                );
+              },
             ),
-          ),
-        ),
-      ];
-    }
+    );
+  }
 
-    final gyms = _filteredGyms;
-
-    if (gyms.isEmpty) {
-      return const [
-        SizedBox(
-          height: 180,
-          child: Center(
-            child: Text(
-              'Tidak ada gym yang sesuai.',
-              style: TextStyle(color: Colors.white70),
-            ),
-          ),
-        ),
-      ];
-    }
-
-    return gyms
-        .map(
-          (gym) => GymCard(
-            gym: gym,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => DetailScreen(gym: gym)),
-              );
-            },
-          ),
-        )
-        .toList();
+  @override
+  bool shouldRebuild(covariant _CategoryHeaderDelegate oldDelegate) {
+    return oldDelegate.selectedCategoryId != selectedCategoryId ||
+        oldDelegate.categories != categories;
   }
 }
