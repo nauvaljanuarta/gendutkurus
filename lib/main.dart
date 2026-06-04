@@ -1,6 +1,6 @@
 import 'package:device_preview/device_preview.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/main_navigation.dart';
 import 'screens/gym/map_screen.dart';
