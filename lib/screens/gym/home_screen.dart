@@ -19,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
-  int? _selectedCategoryId; // null = Semua
+  int? _selectedCategoryId;
   List<Gym> _gyms = [];
   List<Category> _categories = [];
   bool _isLoading = true;
@@ -43,14 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
         CategoryService.fetchCategories(),
       ]);
 
-      // DEBUG: cek isi imageUrls dari Supabase
-      final loadedGyms = results[0] as List<Gym>;
-      for (final g in loadedGyms) {
-        print('GYM: ${g.name} | imageUrls: ${g.imageUrls}');
-      }
-
       setState(() {
-        _gyms = loadedGyms;
+        _gyms = results[0] as List<Gym>;
         _categories = results[1] as List<Category>;
         _isLoading = false;
       });
@@ -65,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Gym> get _filteredGyms {
     return _gyms.where((gym) {
       final query = _searchQuery.toLowerCase();
-      final matchesSearch = gym.name.toLowerCase().contains(query) ||
+      final matchesSearch =
+          gym.name.toLowerCase().contains(query) ||
           gym.address.toLowerCase().contains(query);
       final matchesCategory =
           _selectedCategoryId == null || gym.categoryId == _selectedCategoryId;
@@ -248,19 +243,57 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGymList() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildPromoBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Promo Fitness',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Diskon keanggotaan bulan ini',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            'Paket latihan lengkap dengan trainer profesional.',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
 
-    if (_error != null) {
-      return Center(
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, color: Colors.white38, size: 48),
             const SizedBox(height: 12),
-            Text(
+            const Text(
               'Gagal memuat data',
               style: TextStyle(
                 color: Colors.white70,
@@ -282,40 +315,67 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      );
-    }
-
-    final gyms = _filteredGyms;
-
-    if (gyms.isEmpty) {
-      return const Center(
-        child: Text(
-          'Tidak ada gym yang sesuai.',
-          style: TextStyle(color: Colors.white70),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: ListView.builder(
-        itemCount: gyms.length,
-        itemBuilder: (context, index) {
-          final gym = gyms[index];
-          return GymCard(
-            gym: gym,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => DetailScreen(gym: gym),
-                ),
-              );
-            },
-          );
-        },
       ),
     );
+  }
+}
+
+class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final List<Category> categories;
+  final int? selectedCategoryId;
+  final ValueChanged<int?> onCategorySelected;
+
+  _CategoryHeaderDelegate({
+    required this.categories,
+    required this.selectedCategoryId,
+    required this.onCategorySelected,
+  });
+
+  @override
+  double get minExtent => 58;
+
+  @override
+  double get maxExtent => 58;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: const Color(0xFF121212),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: categories.isEmpty
+          ? const SizedBox.shrink()
+          : ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: categories.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return CategoryChip(
+                    label: 'Semua',
+                    isSelected: selectedCategoryId == null,
+                    onTap: () => onCategorySelected(null),
+                  );
+                }
+
+                final category = categories[index - 1];
+                return CategoryChip(
+                  label: category.name,
+                  isSelected: selectedCategoryId == category.id,
+                  onTap: () => onCategorySelected(category.id),
+                );
+              },
+            ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _CategoryHeaderDelegate oldDelegate) {
+    return oldDelegate.selectedCategoryId != selectedCategoryId ||
+        oldDelegate.categories != categories;
   }
 }
 
