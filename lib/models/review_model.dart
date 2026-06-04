@@ -2,6 +2,7 @@ class Review {
   final int id;
   final int gymId;
   final String userId;
+  final String userName;
   final int rating;
   final String? comment;
   final DateTime createdAt;
@@ -10,6 +11,7 @@ class Review {
     required this.id,
     required this.gymId,
     required this.userId,
+    required this.userName,
     required this.rating,
     this.comment,
     required this.createdAt,
@@ -20,6 +22,7 @@ class Review {
       id: json['id'] as int,
       gymId: json['gym_id'] as int,
       userId: json['user_id'] as String? ?? '',
+      userName: json['user_name'] as String? ?? 'Pengguna',
       rating: json['rating'] as int,
       comment: json['comment'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -31,6 +34,7 @@ class Review {
       'id': id,
       'gym_id': gymId,
       'user_id': userId,
+      'user_name': userName,
       'rating': rating,
       'comment': comment,
       'created_at': createdAt.toIso8601String(),
