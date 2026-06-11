@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _buildGymList() // shows error state
+              ? _buildErrorState() // shows error state
               : CustomScrollView(
                   physics: const BouncingScrollPhysics(),
                   slivers: [
@@ -243,47 +243,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPromoBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Promo Fitness',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Diskon keanggotaan bulan ini',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'Paket latihan lengkap dengan trainer profesional.',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -361,61 +320,6 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
                   );
                 }
 
-                final category = categories[index - 1];
-                return CategoryChip(
-                  label: category.name,
-                  isSelected: selectedCategoryId == category.id,
-                  onTap: () => onCategorySelected(category.id),
-                );
-              },
-            ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(covariant _CategoryHeaderDelegate oldDelegate) {
-    return oldDelegate.selectedCategoryId != selectedCategoryId ||
-        oldDelegate.categories != categories;
-  }
-}
-
-// ── Pinned Category Header Delegate ──
-class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final List<Category> categories;
-  final int? selectedCategoryId;
-  final ValueChanged<int?> onCategorySelected;
-
-  _CategoryHeaderDelegate({
-    required this.categories,
-    required this.selectedCategoryId,
-    required this.onCategorySelected,
-  });
-
-  @override
-  double get minExtent => 58;
-  @override
-  double get maxExtent => 58;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: const Color(0xFF121212),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: categories.isEmpty
-          ? const SizedBox.shrink()
-          : ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: categories.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return CategoryChip(
-                    label: 'Semua',
-                    isSelected: selectedCategoryId == null,
-                    onTap: () => onCategorySelected(null),
-                  );
-                }
                 final category = categories[index - 1];
                 return CategoryChip(
                   label: category.name,

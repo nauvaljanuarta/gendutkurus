@@ -37,17 +37,16 @@ class Gym {
 
   factory Gym.fromJson(Map<String, dynamic> json) {
     var imageList = json['gym_images'] as List<dynamic>? ?? [];
-    List<String> parsedImages = imageList
-        .map((img) => (img['image_url'] as String? ?? '').trim())
-        .where((url) => url.isNotEmpty)
-        .map((url) {
-          // Otomatis ubah http ke https agar tidak diblokir Android
-          if (url.startsWith('http://')) {
-            return url.replaceFirst('http://', 'https://');
-          }
-          return url;
-        })
-        .toList();
+    List<String> parsedImages = imageList.map((img) {
+      String url = (img['image_url'] as String? ?? '')
+          .replaceAll(RegExp(r'\s+'), '')// Hapus spasi & newline
+          .replaceAll(RegExp(r'[\[\]]'), ''); // Hapus karakter [ dan ]
+      // Otomatis ubah http ke https agar tidak diblokir Android
+      if (url.startsWith('http://')) {
+        url = url.replaceFirst('http://', 'https://');
+      }
+      return url;
+    }).toList();
 
     return Gym(
       gymId: json['gym_id'] as int,
