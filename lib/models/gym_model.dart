@@ -38,7 +38,9 @@ class Gym {
   factory Gym.fromJson(Map<String, dynamic> json) {
     var imageList = json['gym_images'] as List<dynamic>? ?? [];
     List<String> parsedImages = imageList.map((img) {
-      String url = img['image_url'] as String;
+      String url = (img['image_url'] as String? ?? '')
+          .replaceAll(RegExp(r'\s+'), '')  // Hapus spasi & newline
+          .replaceAll(RegExp(r'[\[\]]'), ''); // Hapus karakter [ dan ]
       // Otomatis ubah http ke https agar tidak diblokir Android
       if (url.startsWith('http://')) {
         url = url.replaceFirst('http://', 'https://');
