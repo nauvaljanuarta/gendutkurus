@@ -29,6 +29,18 @@ class _DetailScreenState extends State<DetailScreen> {
   // Rate limiting untuk website button
   bool _isWebsiteOnCooldown = false;
 
+  /// Rating kumulatif: (googleRating × googleCount + appSum) / (googleCount + appCount)
+  double get _cumulativeRating {
+    final appSum = _reviews.fold<int>(0, (sum, r) => sum + r.rating);
+    final appCount = _reviews.length;
+    final totalCount = gym.reviewCount + appCount;
+    if (totalCount == 0) return 0.0;
+    return (gym.rating * gym.reviewCount + appSum) / totalCount;
+  }
+
+  /// Total review: Google + app
+  int get _totalReviewCount => gym.reviewCount + _reviews.length;
+
   @override
   void initState() {
     super.initState();
@@ -120,6 +132,7 @@ class _DetailScreenState extends State<DetailScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,40 +192,36 @@ class _DetailScreenState extends State<DetailScreen> {
                         size: 18,
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        '${gym.rating}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      if (gym.reviewCount > 0) ...[
+                      _isLoadingReviews
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFFFFD700)),
+                              ),
+                            )
+                          : Text(
+                              _totalReviewCount == 0
+                                  ? 'Belum ada ulasan'
+                                  : _cumulativeRating.toStringAsFixed(1),
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                      if (!_isLoadingReviews && _totalReviewCount > 0) ...[
                         const SizedBox(width: 4),
                         Text(
-                          '(${gym.reviewCount} review)',
+                          '($_totalReviewCount ulasan)',
                           style: const TextStyle(
                             color: Colors.white54,
                             fontSize: 14,
                           ),
                         ),
                       ],
-                    //   const SizedBox(width: 16),
-                    //   const Icon(
-                    //     Icons.access_time,
-                    //     color: Colors.white70,
-                    //     size: 18,
-                    //   ),
-                    //   const SizedBox(width: 6),
-                    //   Expanded(
-                    //   child: Text(
-                    //     'Lihat jadwal di bawah',
-                    //     style: const TextStyle(
-                    //       color: Colors.white70, 
-                    //       fontSize: 14, 
-                    //       fontStyle: FontStyle.italic
-                    //     ),
-                    //     overflow: TextOverflow.ellipsis,
-                    //   ),
-                    // ),
-                  ],
-                ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
                   const SizedBox(height: 20),
                   const Text(
                     'Alamat Lengkap',
@@ -359,23 +368,23 @@ class _DetailScreenState extends State<DetailScreen> {
                       label: const Text('Rute di Aplikasi'),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _openGoogleMaps(context),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white70,
-                        side: const BorderSide(color: Colors.white24),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      icon: const Icon(Icons.location_on),
-                      label: const Text('Lihat Lokasi di Google Maps'),
-                    ), 
-                  ),
+                  // const SizedBox(height: 12),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   child: OutlinedButton.icon(
+                  //     onPressed: () => _openGoogleMaps(context),
+                  //     style: OutlinedButton.styleFrom(
+                  //       foregroundColor: Colors.white70,
+                  //       side: const BorderSide(color: Colors.white24),
+                  //       padding: const EdgeInsets.symmetric(vertical: 14),
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(16),
+                  //       ),
+                  //     ),
+                  //     icon: const Icon(Icons.location_on),
+                  //     label: const Text('Lihat Lokasi di Google Maps'),
+                  //   ), 
+                  // ),
                   const SizedBox(height: 16),
                       // 1. TOMBOL GOOGLE MAPS
                   SizedBox(

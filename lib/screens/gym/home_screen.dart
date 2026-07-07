@@ -3,6 +3,7 @@ import '../../models/gym_model.dart';
 import '../../models/category_model.dart';
 import '../../services/gym_service.dart';
 import '../../services/category_service.dart';
+import '../../services/api_client.dart';
 import '../../widgets/search_bar.dart';
 import '../../widgets/category_chip.dart';
 import '../../widgets/gym_card.dart';
@@ -95,27 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      actions: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () {},
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF252525),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(
-                                Icons.notifications_none,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      actions: const [],
                       flexibleSpace: FlexibleSpaceBar(
                         background: SafeArea(
                           child: Padding(
@@ -133,54 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 const SizedBox(height: 20),
                                 Expanded(
-                                  child: Container(
-                                    width: double.infinity,
-                                    clipBehavior: Clip.hardEdge,
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xFF2979FF),
-                                          Color(0xFF00B0FF)
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: const [
-                                        Text(
-                                          'Promo Fitness',
-                                          style: TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 12),
-                                        ),
-                                        SizedBox(height: 12),
-                                        Text(
-                                          'Diskon keanggotaan bulan ini',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          'Gabung sekarang dan dapatkan paket latihan lengkap.',
-                                          style: TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 12),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                  child: _buildGreetingCard(),
                                 ),
                               ],
                             ),
@@ -240,6 +174,66 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                   ],
                 ),
+    );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) return 'Selamat Pagi';
+    if (hour >= 12 && hour < 15) return 'Selamat Siang';
+    if (hour >= 15 && hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
+  }
+
+  Widget _buildGreetingCard() {
+    final user = ApiClient.client.auth.currentUser;
+    final fullName = user?.userMetadata?['full_name'] as String? ??
+        user?.email?.split('@').first ??
+        'Pengguna';
+    // Ambil nama depan saja
+    final firstName = fullName.split(' ').first;
+    final greeting = _getGreeting();
+
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.hardEdge,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            greeting,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            firstName,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Temukan gym terbaik di Surabaya untukmu 💪',
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 

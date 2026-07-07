@@ -1,8 +1,19 @@
 class Gym {
   final int gymId;
   final String name;
+
+  /// Rating asli dari Google Maps (tidak pernah diubah)
   final double rating;
+
+  /// Jumlah review asli dari Google Maps (tidak pernah diubah)
   final int reviewCount;
+
+  /// Jumlah review dari pengguna Gendut Kurus
+  final int appReviewCount;
+
+  /// Total nilai (sum) rating dari pengguna Gendut Kurus
+  final int appReviewSum;
+
   final String address;
   final String? phone;
   final String? website;
@@ -22,6 +33,8 @@ class Gym {
     required this.name,
     required this.rating,
     required this.reviewCount,
+    this.appReviewCount = 0,
+    this.appReviewSum = 0,
     required this.address,
     this.phone,
     this.website,
@@ -34,6 +47,17 @@ class Gym {
     this.categoryName,
     this.categoryIcon,
   });
+
+  /// Rating kumulatif (Google + App) menggunakan weighted average:
+  /// (googleRating × googleReviewCount + appReviewSum) / (googleReviewCount + appReviewCount)
+  double get cumulativeRating {
+    final totalCount = reviewCount + appReviewCount;
+    if (totalCount == 0) return 0.0;
+    return (rating * reviewCount + appReviewSum) / totalCount;
+  }
+
+  /// Total jumlah review (Google + App)
+  int get totalReviewCount => reviewCount + appReviewCount;
 
   factory Gym.fromJson(Map<String, dynamic> json) {
     var imageList = json['gym_images'] as List<dynamic>? ?? [];
@@ -87,5 +111,31 @@ class Gym {
       'description': description,
       'gym_images': imageUrls.map((url) => {'image_url': url}).toList(),
     };
+  }
+
+  /// Salinan Gym dengan data review app yang sudah dihitung
+  Gym copyWithAppStats({
+    required int appReviewSum,
+    required int appReviewCount,
+  }) {
+    return Gym(
+      gymId: gymId,
+      name: name,
+      rating: rating,           // Google rating tetap tidak berubah
+      reviewCount: reviewCount, // Google review count tetap tidak berubah
+      appReviewSum: appReviewSum,
+      appReviewCount: appReviewCount,
+      address: address,
+      phone: phone,
+      website: website,
+      openingHours: openingHours,
+      latitude: latitude,
+      longitude: longitude,
+      categoryId: categoryId,
+      description: description,
+      imageUrls: imageUrls,
+      categoryName: categoryName,
+      categoryIcon: categoryIcon,
+    );
   }
 }

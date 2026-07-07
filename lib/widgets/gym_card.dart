@@ -73,16 +73,28 @@ class GymCard extends StatelessWidget {
                               color: Color(0xFFFFD700),
                             ),
                             const SizedBox(width: 4),
-                            Text('${gym.rating}'),
+                            Text(
+                              gym.totalReviewCount > 0
+                                  ? gym.cumulativeRating.toStringAsFixed(1)
+                                  : '-',
+                            ),
                           ],
                         ),
                       ),
                       const SizedBox(width: 8),
-                      if (gym.reviewCount > 0)
+                      if (gym.totalReviewCount > 0)
                         Text(
-                          '(${gym.reviewCount} review)',
+                          '(${gym.totalReviewCount} ulasan)',
                           style: const TextStyle(
                             color: Colors.white54,
+                            fontSize: 12,
+                          ),
+                        )
+                      else
+                        const Text(
+                          'Belum ada ulasan',
+                          style: TextStyle(
+                            color: Colors.white38,
                             fontSize: 12,
                           ),
                         ),
