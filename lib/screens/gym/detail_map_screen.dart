@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import '../../widgets/cached_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -274,6 +275,7 @@ class _DetailMapScreenState extends State<DetailMapScreen> with TickerProviderSt
                 urlTemplate: _tileUrls[_currentMapStyle]!,
                 subdomains: const ['a', 'b', 'c', 'd'],
                 userAgentPackageName: 'com.example.gendutkurus',
+                tileProvider: CachedTileProvider(),
               ),
               
               // Glowing Neon Route Polyline
