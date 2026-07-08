@@ -240,7 +240,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 16),
         _ProfileTile(label: 'Email', value: email),
         const _ProfileTile(label: 'Lokasi', value: 'Surabaya, Jawa Timur'),
-        const _ProfileTile(label: 'Status Member', value: 'Aktif'),
         const SizedBox(height: 20),
         const Text(
           'Preferensi',

@@ -3,6 +3,7 @@ import '../../models/gym_model.dart';
 import '../../models/category_model.dart';
 import '../../services/gym_service.dart';
 import '../../services/category_service.dart';
+import '../../services/api_client.dart';
 import '../../widgets/search_bar.dart';
 import '../../widgets/category_chip.dart';
 import '../../widgets/gym_card.dart';
@@ -19,7 +20,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
-  int? _selectedCategoryId; // null = Semua
+  int? _selectedCategoryId;
   List<Gym> _gyms = [];
   List<Category> _categories = [];
   bool _isLoading = true;
@@ -43,14 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
         CategoryService.fetchCategories(),
       ]);
 
-      // DEBUG: cek isi imageUrls dari Supabase
-      final loadedGyms = results[0] as List<Gym>;
-      for (final g in loadedGyms) {
-        print('GYM: ${g.name} | imageUrls: ${g.imageUrls}');
-      }
-
       setState(() {
-        _gyms = loadedGyms;
+        _gyms = results[0] as List<Gym>;
         _categories = results[1] as List<Category>;
         _isLoading = false;
       });
@@ -65,7 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Gym> get _filteredGyms {
     return _gyms.where((gym) {
       final query = _searchQuery.toLowerCase();
-      final matchesSearch = gym.name.toLowerCase().contains(query) ||
+      final matchesSearch =
+          gym.name.toLowerCase().contains(query) ||
           gym.address.toLowerCase().contains(query);
       final matchesCategory =
           _selectedCategoryId == null || gym.categoryId == _selectedCategoryId;
@@ -79,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _buildGymList() // shows error state
+              ? _buildErrorState() // shows error state
               : CustomScrollView(
                   physics: const BouncingScrollPhysics(),
                   slivers: [
@@ -100,27 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      actions: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () {},
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF252525),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(
-                                Icons.notifications_none,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      actions: const [],
                       flexibleSpace: FlexibleSpaceBar(
                         background: SafeArea(
                           child: Padding(
@@ -138,54 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 const SizedBox(height: 20),
                                 Expanded(
-                                  child: Container(
-                                    width: double.infinity,
-                                    clipBehavior: Clip.hardEdge,
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xFF2979FF),
-                                          Color(0xFF00B0FF)
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: const [
-                                        Text(
-                                          'Promo Fitness',
-                                          style: TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 12),
-                                        ),
-                                        SizedBox(height: 12),
-                                        Text(
-                                          'Diskon keanggotaan bulan ini',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          'Gabung sekarang dan dapatkan paket latihan lengkap.',
-                                          style: TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 12),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                  child: _buildGreetingCard(),
                                 ),
                               ],
                             ),
@@ -248,19 +177,76 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGymList() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) return 'Selamat Pagi';
+    if (hour >= 12 && hour < 15) return 'Selamat Siang';
+    if (hour >= 15 && hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
+  }
 
-    if (_error != null) {
-      return Center(
+  Widget _buildGreetingCard() {
+    final user = ApiClient.client.auth.currentUser;
+    final fullName = user?.userMetadata?['full_name'] as String? ??
+        user?.email?.split('@').first ??
+        'Pengguna';
+    // Ambil nama depan saja
+    final firstName = fullName.split(' ').first;
+    final greeting = _getGreeting();
+
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.hardEdge,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            greeting,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            firstName,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Temukan gym terbaik di Surabaya untukmu 💪',
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, color: Colors.white38, size: 48),
             const SizedBox(height: 12),
-            Text(
+            const Text(
               'Gagal memuat data',
               style: TextStyle(
                 color: Colors.white70,
@@ -282,44 +268,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      );
-    }
-
-    final gyms = _filteredGyms;
-
-    if (gyms.isEmpty) {
-      return const Center(
-        child: Text(
-          'Tidak ada gym yang sesuai.',
-          style: TextStyle(color: Colors.white70),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: ListView.builder(
-        itemCount: gyms.length,
-        itemBuilder: (context, index) {
-          final gym = gyms[index];
-          return GymCard(
-            gym: gym,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => DetailScreen(gym: gym),
-                ),
-              );
-            },
-          );
-        },
       ),
     );
   }
 }
 
-// ── Pinned Category Header Delegate ──
 class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
   final List<Category> categories;
   final int? selectedCategoryId;
@@ -333,12 +286,16 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get minExtent => 58;
+
   @override
   double get maxExtent => 58;
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: const Color(0xFF121212),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -356,6 +313,7 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
                     onTap: () => onCategorySelected(null),
                   );
                 }
+
                 final category = categories[index - 1];
                 return CategoryChip(
                   label: category.name,

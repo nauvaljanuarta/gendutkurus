@@ -13,7 +13,6 @@ class AppSearchBar extends StatelessWidget {
       decoration: InputDecoration(
         hintText: 'Cari gym di Surabaya...',
         prefixIcon: const Icon(Icons.search),
-        suffixIcon: const Icon(Icons.tune),
       ),
     );
   }

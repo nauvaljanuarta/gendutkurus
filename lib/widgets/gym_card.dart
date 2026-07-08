@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../models/gym_model.dart';
 
@@ -25,11 +26,15 @@ class GymCard extends StatelessWidget {
                 height: 170,
                 // Jika gym punya gambar, tampilkan gambar pertama [0]
                 child: gym.imageUrls.isNotEmpty
-                    ? Image.network(
-                        gym.imageUrls[0],
+                    ? CachedNetworkImage(
+                        imageUrl: gym.imageUrls[0],
                         fit: BoxFit.cover,
+                        placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                         // Jika URL error/putus, tampilkan warna default
-                        errorBuilder: (context, error, stackTrace) => _buildFallbackGradient(),
+                        errorWidget: (context, url, error) =>
+                            _buildFallbackGradient(),
                       )
                     // Jika gym TIDAK punya gambar, tampilkan warna default
                     : _buildFallbackGradient(),
@@ -68,22 +73,37 @@ class GymCard extends StatelessWidget {
                               color: Color(0xFFFFD700),
                             ),
                             const SizedBox(width: 4),
-                            Text('${gym.rating}'),
+                            Text(
+                              gym.totalReviewCount > 0
+                                  ? gym.cumulativeRating.toStringAsFixed(1)
+                                  : '-',
+                            ),
                           ],
                         ),
                       ),
                       const SizedBox(width: 8),
-                      if (gym.reviewCount > 0)
+                      if (gym.totalReviewCount > 0)
                         Text(
-                          '(${gym.reviewCount} review)',
+                          '(${gym.totalReviewCount} ulasan)',
                           style: const TextStyle(
                             color: Colors.white54,
+                            fontSize: 12,
+                          ),
+                        )
+                      else
+                        const Text(
+                          'Belum ada ulasan',
+                          style: TextStyle(
+                            color: Colors.white38,
                             fontSize: 12,
                           ),
                         ),
                       const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(6),
@@ -184,14 +204,21 @@ class GymCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 if (gym.categoryName != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black26,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       gym.categoryName!,
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
               ],
@@ -204,28 +231,42 @@ class GymCard extends StatelessWidget {
 
   List<Color> _getCategoryGradient(String? category) {
     switch (category?.toLowerCase()) {
-      case 'gym premium': return [const Color(0xFF6A11CB), const Color(0xFF2575FC)];
-      case 'gym murah': return [const Color(0xFF11998E), const Color(0xFF38EF7D)];
-      case 'gym 24 jam': return [const Color(0xFFFC466B), const Color(0xFF3F5EFB)];
-      case 'fitness wanita': return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
-      case 'crossfit': return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
-      default: return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
+      case 'gym premium':
+        return [const Color(0xFF6A11CB), const Color(0xFF2575FC)];
+      case 'gym murah':
+        return [const Color(0xFF11998E), const Color(0xFF38EF7D)];
+      case 'gym 24 jam':
+        return [const Color(0xFFFC466B), const Color(0xFF3F5EFB)];
+      case 'fitness wanita':
+        return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
+      case 'crossfit':
+        return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
+      default:
+        return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
     }
   }
 
   IconData _getCategoryIcon(String? category) {
     switch (category?.toLowerCase()) {
-      case 'gym premium': return Icons.fitness_center;
-      case 'gym murah': return Icons.attach_money;
-      case 'gym 24 jam': return Icons.schedule;
-      case 'fitness wanita': return Icons.female;
-      case 'crossfit': return Icons.sports_gymnastics;
-      default: return Icons.fitness_center;
+      case 'gym premium':
+        return Icons.fitness_center;
+      case 'gym murah':
+        return Icons.attach_money;
+      case 'gym 24 jam':
+        return Icons.schedule;
+      case 'fitness wanita':
+        return Icons.female;
+      case 'crossfit':
+        return Icons.sports_gymnastics;
+      default:
+        return Icons.fitness_center;
     }
   }
 
   String _getShortHours(String rawHours) {
-    if (rawHours.isEmpty || rawHours.toLowerCase() == 'tidak tersedia' || rawHours == '-') {
+    if (rawHours.isEmpty ||
+        rawHours.toLowerCase() == 'tidak tersedia' ||
+        rawHours == '-') {
       return 'Tidak tersedia';
     }
     if (rawHours.toLowerCase().contains('24 jam')) return 'Buka 24 Jam';
@@ -235,7 +276,7 @@ class GymCard extends StatelessWidget {
     if (match != null) {
       return '${match.group(1)} - ${match.group(2)}';
     }
-    
+
     return 'Lihat Detail';
   }
 }
