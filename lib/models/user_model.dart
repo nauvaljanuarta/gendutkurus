@@ -3,12 +3,14 @@ class UserModel {
   final String email;
   final String? fullName;
   final DateTime createdAt;
+  final List<int> interestCategoryIds;
 
   const UserModel({
     required this.id,
     required this.email,
     this.fullName,
     required this.createdAt,
+    this.interestCategoryIds = const [],
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,10 @@ class UserModel {
       email: json['email'] as String? ?? '',
       fullName: json['full_name'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
+      interestCategoryIds: (json['interest_category_ids'] as List?)
+              ?.map((e) => e as int)
+              .toList() ??
+          const [],
     );
   }
 
@@ -26,6 +32,7 @@ class UserModel {
       'email': email,
       'full_name': fullName,
       'created_at': createdAt.toIso8601String(),
+      'interest_category_ids': interestCategoryIds,
     };
   }
 }

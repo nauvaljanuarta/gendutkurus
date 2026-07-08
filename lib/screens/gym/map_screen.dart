@@ -63,7 +63,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   bool _isRoutingActive = false;
 
   // Map Tile Style ('dark', 'voyager', 'positron')
-  String _currentMapStyle = 'dark';
+  String _currentMapStyle = 'positron';
   final Map<String, String> _tileUrls = {
     'dark': 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     'voyager': 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
@@ -465,10 +465,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -479,23 +479,23 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                         _mapSearchQuery = value;
                       });
                     },
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Cari gym...',
                       hintStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                         fontSize: 14,
                       ),
                       prefixIcon: Icon(
                         Icons.search,
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                         size: 20,
                       ),
                       suffixIcon: _mapSearchQuery.isNotEmpty
                           ? IconButton(
                               icon: Icon(
                                 Icons.close,
-                                color: Colors.white.withValues(alpha: 0.5),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                                 size: 18,
                               ),
                               onPressed: () {
@@ -528,10 +528,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                   width: 46,
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -548,7 +548,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           );
                         },
                       ),
-                      const Divider(color: Colors.white10, height: 12),
+                      Divider(color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15), height: 12),
                       // Zoom Out
                       _buildDeckButton(
                         icon: Icons.remove,
@@ -559,17 +559,17 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           );
                         },
                       ),
-                      const Divider(color: Colors.white10, height: 12),
+                      Divider(color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15), height: 12),
                       // Theme Switcher
                       _buildDeckButton(
                         icon: Icons.layers_outlined,
                         onTap: _toggleMapStyle,
                       ),
-                      const Divider(color: Colors.white10, height: 12),
+                      Divider(color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15), height: 12),
                       // Recenter User Location
                       _buildDeckButton(
                         icon: _shouldCenterOnUser ? Icons.gps_fixed : Icons.gps_not_fixed,
-                        iconColor: _shouldCenterOnUser ? Theme.of(context).colorScheme.primary : Colors.white70,
+                        iconColor: _shouldCenterOnUser ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         onTap: () {
                           if (_userPosition != null) {
                             setState(() {
@@ -620,7 +620,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E).withValues(alpha: 0.8),
+                      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: _getGymThemeColor(_selectedGym!).withValues(alpha: 0.35),
@@ -628,7 +628,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.5),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -676,10 +676,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                           ),
                                         Text(
                                           _selectedGym!.name,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                            color: Theme.of(context).colorScheme.onSurface,
                                           ),
                                         ),
                                       ],
@@ -704,8 +704,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                         const SizedBox(width: 4),
                                         Text(
                                           '${_selectedGym!.rating}',
-                                          style: const TextStyle(
-                                            color: Colors.white,
+                                          style: TextStyle(
+                                            color: Theme.of(context).colorScheme.onSurface,
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -720,14 +720,14 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                               // Address
                               Row(
                                 children: [
-                                  const Icon(Icons.location_on_outlined,
-                                      color: Colors.white54, size: 16),
+                                  Icon(Icons.location_on_outlined,
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.54), size: 16),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
                                       _selectedGym!.address,
-                                      style: const TextStyle(
-                                          color: Colors.white70, fontSize: 13),
+                                      style: TextStyle(
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 13),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -745,8 +745,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                   const SizedBox(width: 6),
                                   Text(
                                     _userPosDistText(_selectedGym!),
-                                    style: const TextStyle(
-                                      color: Colors.white54,
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.54),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -762,10 +762,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.3),
+                                    color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(
-                                        color: Colors.white10, width: 1),
+                                        color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2), width: 1),
                                   ),
                                   child: Row(
                                     mainAxisAlignment:
@@ -773,16 +773,16 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                     children: [
                                       Column(
                                         children: [
-                                          const Text('JARAK RUTE',
+                                          Text('JARAK RUTE',
                                               style: TextStyle(
-                                                  color: Colors.white30,
+                                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                                                   fontSize: 9,
                                                   fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 4),
                                           Text(
                                             '${_routeDistanceKm!.toStringAsFixed(1)} km',
-                                            style: const TextStyle(
-                                                color: Color(0xFF00E5FF),
+                                            style: TextStyle(
+                                                color: Theme.of(context).colorScheme.primary,
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold),
                                           ),
@@ -791,19 +791,19 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                       Container(
                                           height: 24,
                                           width: 1,
-                                          color: Colors.white10),
+                                          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2)),
                                       Column(
                                         children: [
-                                          const Text('ESTIMASI WAKTU',
+                                          Text('ESTIMASI WAKTU',
                                               style: TextStyle(
-                                                  color: Colors.white30,
+                                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                                                   fontSize: 9,
                                                   fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 4),
                                           Text(
                                             '${_routeDurationMin!.toStringAsFixed(0)} menit',
                                             style: const TextStyle(
-                                                color: Color(0xFF00E676),
+                                                color: Color(0xFF2E7D32),
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold),
                                           ),
@@ -830,9 +830,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                           });
                                         },
                                         style: OutlinedButton.styleFrom(
-                                          foregroundColor: Colors.white70,
-                                          side: const BorderSide(
-                                              color: Colors.white24),
+                                          foregroundColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                          side: BorderSide(
+                                              color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3)),
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 12),
                                           shape: RoundedRectangleBorder(
@@ -987,7 +987,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   Widget _buildDeckButton({
     required IconData icon,
     required VoidCallback onTap,
-    Color iconColor = Colors.white70,
+    Color? iconColor,
   }) {
     return Material(
       color: Colors.transparent,
@@ -998,7 +998,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           width: 38,
           height: 38,
           alignment: Alignment.center,
-          child: Icon(icon, size: 20, color: iconColor),
+          child: Icon(icon, size: 20, color: iconColor ?? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         ),
       ),
     );

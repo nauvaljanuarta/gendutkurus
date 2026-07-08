@@ -13,4 +13,14 @@ class UserService {
     if (response == null) return null;
     return UserModel.fromJson(response);
   }
+
+  /// Memperbarui preferensi kategori minat pengguna
+  static Future<void> updateUserInterests(String userId, List<int> categoryIds) async {
+    await ApiClient.client
+        .from('users')
+        .update({
+          'interest_category_ids': categoryIds,
+        })
+        .eq('id', userId);
+  }
 }

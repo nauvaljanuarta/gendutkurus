@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../models/user_model.dart';
+import '../../models/category_model.dart';
+import '../../services/user_service.dart';
+import '../../services/category_service.dart';
 import '../../services/api_client.dart';
 import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
@@ -12,6 +16,180 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = false;
+  UserModel? _userModel;
+  bool _isLoadingProfile = false;
+  List<Category> _allCategories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileAndCategories();
+  }
+
+  Future<void> _loadProfileAndCategories() async {
+    final user = ApiClient.client.auth.currentUser;
+    if (user == null) return;
+
+    setState(() {
+      _isLoadingProfile = true;
+    });
+
+    try {
+      final results = await Future.wait([
+        UserService.fetchUserProfile(user.id),
+        CategoryService.fetchCategories(),
+      ]);
+      setState(() {
+        _userModel = results[0] as UserModel?;
+        _allCategories = results[1] as List<Category>;
+      });
+    } catch (e) {
+      debugPrint('Error loading profile or categories: $e');
+    } finally {
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
+  Future<void> _saveUserInterests(List<int> selectedIds) async {
+    final user = ApiClient.client.auth.currentUser;
+    if (user == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await UserService.updateUserInterests(user.id, selectedIds);
+      await _loadProfileAndCategories();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Minat latihan berhasil diperbarui!'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memperbarui minat latihan: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showEditInterestsDialog() {
+    if (_allCategories.isEmpty) return;
+
+    List<int> tempSelectedIds = List.from(_userModel?.interestCategoryIds ?? []);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(
+                'Pilih Fokus Latihan',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _allCategories.map((category) {
+                    final isSelected = tempSelectedIds.contains(category.id);
+                    return FilterChip(
+                      label: Text(
+                        category.name,
+                        style: TextStyle(
+                          color: isSelected
+                              ? Colors.white
+                              : Theme.of(context).colorScheme.onSurface,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: Theme.of(context).colorScheme.primary,
+                      checkmarkColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+                        ),
+                      ),
+                      onSelected: (selected) {
+                        setStateDialog(() {
+                          if (selected) {
+                            tempSelectedIds.add(category.id);
+                          } else {
+                            tempSelectedIds.remove(category.id);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Batal',
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    await _saveUserInterests(tempSelectedIds);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Simpan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _getUserInterestsText() {
+    if (_userModel == null || _userModel!.interestCategoryIds.isEmpty) {
+      return 'Belum diatur';
+    }
+    final names = _userModel!.interestCategoryIds.map((id) {
+      final cat = _allCategories.firstWhere((c) => c.id == id, orElse: () => Category(id: 0, name: ''));
+      return cat.name;
+    }).where((name) => name.isNotEmpty).toList();
+
+    if (names.isEmpty) return 'Belum diatur';
+    return names.join(', ');
+  }
 
   Future<void> _logout() async {
     setState(() {
@@ -65,7 +243,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 40),
-        // Ikon Person Abu-abu
         Center(
           child: Container(
             width: 100,
@@ -103,7 +280,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 48),
 
-        // Tombol Login
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -128,7 +304,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
-              ).then((_) => setState(() {}));
+              ).then((_) {
+                _loadProfileAndCategories();
+                setState(() {});
+              });
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
@@ -150,27 +329,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 20),
 
-        // Tombol Register Outline
         OutlinedButton(
           onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const RegisterScreen()),
-            ).then((_) => setState(() {}));
+            ).then((_) {
+              _loadProfileAndCategories();
+              setState(() {});
+            });
           },
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: Colors.white30),
+            side: BorderSide(color: Theme.of(context).colorScheme.secondary.withOpacity(0.3)),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
           ),
-          child: const Text(
+          child: Text(
             'Daftar Akun Baru',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),
@@ -179,7 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAuthenticatedBody(dynamic user) {
-    final String fullName = user.userMetadata?['full_name'] ?? 'User Gendut Kurus';
+    final String fullName = _userModel?.fullName ?? user.userMetadata?['full_name'] ?? 'User Gendut Kurus';
     final String email = user.email ?? '-';
 
     return Column(
@@ -252,10 +433,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
         ),
         const SizedBox(height: 16),
-        const _ProfileTile(label: 'Fokus Latihan', value: 'Kebugaran & Kesehatan'),
+        _isLoadingProfile
+            ? const Center(child: CircularProgressIndicator())
+            : InkWell(
+                onTap: _showEditInterestsDialog,
+                borderRadius: BorderRadius.circular(20),
+                child: _ProfileTile(
+                  label: 'Fokus Latihan',
+                  value: _getUserInterestsText(),
+                  isInteractive: true,
+                ),
+              ),
         const SizedBox(height: 32),
 
-        // Tombol Keluar Akun
         _isLoading
             ? const Center(child: CircularProgressIndicator(color: Colors.redAccent))
             : SizedBox(
@@ -284,8 +474,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class _ProfileTile extends StatelessWidget {
   final String label;
   final String value;
+  final bool isInteractive;
 
-  const _ProfileTile({required this.label, required this.value});
+  const _ProfileTile({
+    required this.label,
+    required this.value,
+    this.isInteractive = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -302,7 +497,33 @@ class _ProfileTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
-          Text(value, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: isInteractive ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.end,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (isInteractive) ...[
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
