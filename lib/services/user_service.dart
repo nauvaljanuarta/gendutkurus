@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import '../models/user_model.dart';
 import 'api_client.dart';
 
@@ -22,5 +23,33 @@ class UserService {
           'interest_category_ids': categoryIds,
         })
         .eq('id', userId);
+  }
+
+  /// Mengunggah gambar profil ke Supabase Storage (bucket: avatars) dan menyimpan URL di database
+  static Future<String> uploadAvatar({
+    required String userId,
+    required Uint8List fileBytes,
+    required String fileExtension,
+  }) async {
+    final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
+
+    // 1. Upload file ke storage avatars
+    await ApiClient.client.storage.from('avatars').uploadBinary(
+          fileName,
+          fileBytes,
+        );
+
+    // 2. Dapatkan URL public dari file yang diunggah
+    final publicUrl = ApiClient.client.storage.from('avatars').getPublicUrl(fileName);
+
+    // 3. Update data users.avatar_url di database
+    await ApiClient.client
+        .from('users')
+        .update({
+          'avatar_url': publicUrl,
+        })
+        .eq('id', userId);
+
+    return publicUrl;
   }
 }
