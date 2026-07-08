@@ -62,7 +62,7 @@ class GymCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2979FF).withAlpha(36),
+                          color: Theme.of(context).colorScheme.primary.withAlpha(36),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -85,16 +85,16 @@ class GymCard extends StatelessWidget {
                       if (gym.totalReviewCount > 0)
                         Text(
                           '(${gym.totalReviewCount} ulasan)',
-                          style: const TextStyle(
-                            color: Colors.white54,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                             fontSize: 12,
                           ),
                         )
                       else
-                        const Text(
+                        Text(
                           'Belum ada ulasan',
                           style: TextStyle(
-                            color: Colors.white38,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                             fontSize: 12,
                           ),
                         ),
@@ -105,24 +105,24 @@ class GymCard extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
+                          color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.white12),
+                          border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.2)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.access_time,
                               size: 12,
-                              color: Colors.white70,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                             ),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
                                 _getShortHours(gym.openingHours),
-                                style: const TextStyle(
-                                  color: Colors.white70,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -137,16 +137,16 @@ class GymCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.location_on_outlined,
                         size: 14,
-                        color: Colors.white54,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           gym.address,
-                          style: const TextStyle(color: Colors.white70),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -242,7 +242,7 @@ class GymCard extends StatelessWidget {
       case 'crossfit':
         return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
       default:
-        return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
+        return [const Color(0xFF3F72AF), const Color(0xFF5E8BBA)];
     }
   }
 

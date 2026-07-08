@@ -4,6 +4,7 @@ import '../../models/gym_model.dart';
 import '../../services/api_client.dart';
 import '../../services/favorite_service.dart';
 import 'detail_map_screen.dart';
+import 'reviews_list_screen.dart';
 import '../../services/review_service.dart';
 import '../../models/review_model.dart';
 
@@ -174,7 +175,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           : IconButton(
                               icon: Icon(
                                 _isFavorite ? Icons.favorite : Icons.favorite_border,
-                                color: _isFavorite ? Colors.redAccent : Colors.white60,
+                                color: _isFavorite ? Colors.redAccent : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                 size: 28,
                               ),
                               onPressed: _toggleFavorite,
@@ -212,8 +213,8 @@ class _DetailScreenState extends State<DetailScreen> {
                         const SizedBox(width: 4),
                         Text(
                           '($_totalReviewCount ulasan)',
-                          style: const TextStyle(
-                            color: Colors.white54,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54),
                             fontSize: 14,
                           ),
                         ),
@@ -232,13 +233,13 @@ class _DetailScreenState extends State<DetailScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.location_on_outlined,
-                          size: 18, color: Colors.white54),
+                      Icon(Icons.location_on_outlined,
+                          size: 18, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54)),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           gym.address,
-                          style: const TextStyle(color: Colors.white70),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                         ),
                       ),
                     ],
@@ -270,19 +271,22 @@ class _DetailScreenState extends State<DetailScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 10),
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF2979FF).withOpacity(0.3),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Theme.of(context).colorScheme.primary,
+                                      Theme.of(context).colorScheme.secondary,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                ],
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -315,8 +319,8 @@ class _DetailScreenState extends State<DetailScreen> {
                     gym.description.isEmpty
                         ? 'Tidak ada deskripsi tersedia.'
                         : gym.description,
-                    style: const TextStyle(
-                        color: Colors.white70, height: 1.5),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), height: 1.5),
                   ),
                   const SizedBox(height: 24),
                   _buildElegantOpeningHours(gym.openingHours),
@@ -326,18 +330,19 @@ class _DetailScreenState extends State<DetailScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.15)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.map_outlined,
-                              color: Color(0xFF2979FF), size: 20),
+                          Icon(Icons.map_outlined,
+                              color: Theme.of(context).colorScheme.primary, size: 20),
                           const SizedBox(width: 10),
                           Text(
                             'Koordinat: ${gym.latitude.toStringAsFixed(4)}, ${gym.longitude.toStringAsFixed(4)}',
-                            style: const TextStyle(
-                              color: Colors.white54,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54),
                               fontSize: 12,
                             ),
                           ),
@@ -357,7 +362,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2979FF),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -392,8 +397,8 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _openGoogleMaps(context),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white70,
-                        side: const BorderSide(color: Colors.white24),
+                        foregroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        side: BorderSide(color: Theme.of(context).colorScheme.secondary.withOpacity(0.3)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -413,14 +418,14 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Color(0xFF2979FF), width: 1.5),
+                        side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       onPressed: () => _showAddReviewDialog(context),
-                      icon: const Icon(Icons.rate_review, color: Color(0xFF2979FF)),
-                      label: const Text(
+                      icon: Icon(Icons.rate_review, color: Theme.of(context).colorScheme.primary),
+                      label: Text(
                         'Tulis Ulasan Anda',
-                        style: TextStyle(color: Color(0xFF2979FF), fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -430,9 +435,9 @@ class _DetailScreenState extends State<DetailScreen> {
                   // TAMBAHKAN BAGIAN INI DI SINI
                   // =====================================
                   const SizedBox(height: 32),
-                  const Text(
+                  Text(
                     'Ulasan Pengunjung',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
                   ),
                   const SizedBox(height: 16),
                   _buildReviewList(), // <--- MEMANGGIL DAFTAR REVIEW
@@ -470,7 +475,7 @@ class _DetailScreenState extends State<DetailScreen> {
     final List<String> scheduleParts = formattedText.split('|').where((s) => s.isNotEmpty).toList();
 
     if (scheduleParts.isEmpty) {
-      return Text(rawHours, style: const TextStyle(color: Colors.white70));
+      return Text(rawHours, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)));
     }
 
     List<Widget> scheduleWidgets = [];
@@ -513,8 +518,8 @@ class _DetailScreenState extends State<DetailScreen> {
             children: [
               Text(
                 currentDay,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -522,7 +527,7 @@ class _DetailScreenState extends State<DetailScreen> {
               Text(
                 time.isEmpty ? 'Tidak ada data' : time,
                 style: TextStyle(
-                  color: isClosed ? Colors.redAccent : Colors.white70,
+                  color: isClosed ? Colors.redAccent : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                   fontSize: 14,
                   fontWeight: isClosed ? FontWeight.bold : FontWeight.normal,
                 ),
@@ -537,23 +542,23 @@ class _DetailScreenState extends State<DetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E), // Warna kotak senada dengan background gelap
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.calendar_month, color: Color(0xFF2979FF), size: 20),
+            children: [
+              Icon(Icons.calendar_month, color: Theme.of(context).colorScheme.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Jadwal Operasional',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -611,7 +616,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   width: _currentImageIndex == index ? 24 : 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: _currentImageIndex == index ? const Color(0xFF2979FF) : Colors.white70,
+                    color: _currentImageIndex == index ? Theme.of(context).colorScheme.primary : Colors.white70,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -715,7 +720,7 @@ class _DetailScreenState extends State<DetailScreen> {
       case 'gym 24 jam': return [const Color(0xFFFC466B), const Color(0xFF3F5EFB)];
       case 'fitness wanita': return [const Color(0xFFFF6B6B), const Color(0xFFFFE66D)];
       case 'crossfit': return [const Color(0xFFF7971E), const Color(0xFFFFD200)];
-      default: return [const Color(0xFF2979FF), const Color(0xFF00BCD4)];
+      default: return [const Color(0xFF3F72AF), const Color(0xFF5E8BBA)];
     }
   }
 
@@ -753,9 +758,9 @@ class _DetailScreenState extends State<DetailScreen> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              backgroundColor: const Color(0xFF1E1E1E),
+              backgroundColor: Theme.of(context).colorScheme.surface,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: const Text('Tulis Ulasan', style: TextStyle(color: Colors.white)),
+              title: Text('Tulis Ulasan', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -782,15 +787,23 @@ class _DetailScreenState extends State<DetailScreen> {
                   TextField(
                     controller: commentController,
                     maxLines: 3,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     decoration: InputDecoration(
                       hintText: 'Bagaimana pengalaman Anda di gym ini?',
-                      hintStyle: const TextStyle(color: Colors.white38),
+                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
                       filled: true,
-                      fillColor: Colors.black26,
+                      fillColor: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary.withOpacity(0.2), width: 1.5),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary.withOpacity(0.2), width: 1.5),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
                       ),
                     ),
                   ),
@@ -799,11 +812,11 @@ class _DetailScreenState extends State<DetailScreen> {
               actions: [
                 TextButton(
                   onPressed: isSubmitting ? null : () => Navigator.pop(context),
-                  child: const Text('Batal', style: TextStyle(color: Colors.white54)),
+                  child: Text('Batal', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2979FF),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                   onPressed: isSubmitting
@@ -870,7 +883,7 @@ class _DetailScreenState extends State<DetailScreen> {
   Widget _buildReviewList() {
     // Jika masih loading
     if (_isLoadingReviews) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF2979FF)));
+      return Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary));
     }
 
     // Jika belum ada review sama sekali
@@ -879,66 +892,93 @@ class _DetailScreenState extends State<DetailScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
+          color: Theme.of(context).cardTheme.color,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white10),
+          border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.15)),
         ),
-        child: const Text(
+        child: Text(
           'Belum ada ulasan. Jadilah yang pertama mengulas gym ini!',
-          style: TextStyle(color: Colors.white70, fontStyle: FontStyle.italic),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontStyle: FontStyle.italic),
           textAlign: TextAlign.center,
         ),
       );
     }
 
-    // Jika ada review, tampilkan daftarnya
+    // Jika ada review, tampilkan daftarnya (maksimal 3 ulasan teratas yang baru)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: _reviews.map((review) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white10),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 14,
-                    backgroundColor: Colors.white24,
-                    child: Icon(Icons.person, size: 16, color: Colors.white),
+      children: [
+        ..._reviews.take(3).map((review) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardTheme.color,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.15)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                      child: Icon(Icons.person, size: 16, color: Theme.of(context).colorScheme.onSurface),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      review.userName, 
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: List.generate(5, (index) {
+                        return Icon(
+                          index < review.rating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                          size: 14,
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  review.comment ?? '',
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13, height: 1.4),
+                ),
+              ],
+            ),
+          );
+        }),
+        if (_reviews.length > 3)
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ReviewsListScreen(
+                      gymId: gym.gymId,
+                      gymName: gym.name,
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    review.userName, 
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  const Spacer(),
-                  Row(
-                    children: List.generate(5, (index) {
-                      return Icon(
-                        index < review.rating ? Icons.star : Icons.star_border,
-                        color: Colors.amber,
-                        size: 14,
-                      );
-                    }),
-                  ),
-                ],
+                ).then((_) => _fetchReviews()); // Refresh reviews when returning
+              },
+              icon: Icon(Icons.rate_review, color: Theme.of(context).colorScheme.primary),
+              label: Text(
+                'Lihat Semua Ulasan (${_reviews.length})',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                review.comment ?? '',
-                style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
-              ),
-            ],
+            ),
           ),
-        );
-      }).toList(),
+      ],
     );
   }
 }
@@ -954,15 +994,15 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF252525),
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: const Color(0xFF2979FF)),
+          Icon(icon, size: 16, color: Theme.of(context).colorScheme.primary),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13)),
         ],
       ),
     );

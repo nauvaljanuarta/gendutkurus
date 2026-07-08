@@ -2,39 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color black = Color(0xFF121212);
-  static const Color darkGray = Color(0xFF1E1E1E);
-  static const Color blueFitness = Color(0xFF2979FF);
-  static const Color white = Colors.white;
+  // New Color Palette Constants (#F9F7F7, #DBE2EF, #3F72AF, #112D4E)
+  static const Color bgLight = Color(0xFFF9F7F7);        // Very light off-white background
+  static const Color surfaceLight = Colors.white;        // White surfaces for cards
+  static const Color borderLight = Color(0xFFDBE2EF);     // Pale blue-gray for borders/dividers
+  static const Color primaryBlue = Color(0xFF3F72AF);     // Steel blue accent/primary
+  static const Color textDark = Color(0xFF112D4E);        // Dark navy blue for text/titles
+  static const Color textSecondary = Color(0xFF5E8BBA);    // Muted steel blue for secondary text
 
-  static ThemeData dark() {
-    final base = ThemeData.dark(useMaterial3: true);
+  static ThemeData light() {
+    final base = ThemeData.light(useMaterial3: true);
 
     return base.copyWith(
-      colorScheme: const ColorScheme.dark(
-        brightness: Brightness.dark,
-        primary: blueFitness,
-        onPrimary: white,
-        secondary: blueFitness,
-        surface: darkGray,
-        onSurface: white,
+      colorScheme: const ColorScheme.light(
+        brightness: Brightness.light,
+        primary: primaryBlue,
+        onPrimary: Colors.white,
+        secondary: textSecondary,
+        surface: surfaceLight,
+        onSurface: textDark,
       ),
-      scaffoldBackgroundColor: black,
+      scaffoldBackgroundColor: bgLight,
       appBarTheme: const AppBarTheme(
-        backgroundColor: darkGray,
-        foregroundColor: white,
+        backgroundColor: surfaceLight,
+        foregroundColor: textDark,
         elevation: 0,
+        iconTheme: IconThemeData(color: textDark),
+        centerTitle: true,
       ),
       cardTheme: CardThemeData(
-        color: darkGray,
+        color: surfaceLight,
         elevation: 0,
         margin: const EdgeInsets.symmetric(vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: borderLight, width: 1.5),
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: blueFitness,
-          foregroundColor: white,
+          backgroundColor: primaryBlue,
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
@@ -43,17 +51,31 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF262626),
-        hintStyle: const TextStyle(color: Color(0xFFB0B0B0)),
+        fillColor: Colors.white,
+        hintStyle: const TextStyle(color: textSecondary),
+        labelStyle: const TextStyle(color: textDark),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+          borderSide: const BorderSide(color: borderLight, width: 1.5),
         ),
-        prefixIconColor: blueFitness,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: borderLight, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primaryBlue, width: 2.0),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+        ),
+        prefixIconColor: primaryBlue,
+        suffixIconColor: textSecondary,
       ),
       textTheme: GoogleFonts.poppinsTextTheme(
         base.textTheme,
-      ).apply(bodyColor: white, displayColor: white),
+      ).apply(bodyColor: textDark, displayColor: textDark),
     );
   }
 }

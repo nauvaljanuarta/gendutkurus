@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.black,
+      backgroundColor: AppTheme.bgLight,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -39,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> {
             const Text(
               'Gendut Kurus',
               style: TextStyle(
-                color: Colors.white,
+                color: AppTheme.textDark,
                 fontSize: 32,
                 fontWeight: FontWeight.w700,
               ),
@@ -47,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 12),
             const Text(
               'Temukan Gym Terbaik di Surabaya',
-              style: TextStyle(color: Colors.white70, fontSize: 16),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
             ),
           ],
         ),

@@ -71,32 +71,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Theme.of(context).colorScheme.secondary.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.account_circle,
               size: 80,
-              color: Colors.white30,
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
             ),
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
+        Text(
           'Belum Masuk Akun',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Masuk untuk dapat menyimpan gym favorit Anda dan mengakses fitur premium lainnya.',
           style: TextStyle(
             fontSize: 14,
-            color: Colors.white54,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             height: 1.5,
           ),
           textAlign: TextAlign.center,
@@ -106,15 +106,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Tombol Login
         Container(
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF2979FF), Color(0xFF0072FF)],
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2979FF).withOpacity(0.3),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               )
@@ -188,15 +191,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: 88,
               height: 88,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.secondary,
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2979FF).withOpacity(0.3),
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   )
@@ -215,17 +221,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Text(
                     fullName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     'Pencari Gym Aktif',
-                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 14),
                   ),
                 ],
               ),
@@ -233,17 +239,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         const SizedBox(height: 32),
-        const Text(
+        Text(
           'Detail Akun',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
         ),
         const SizedBox(height: 16),
         _ProfileTile(label: 'Email', value: email),
         const _ProfileTile(label: 'Lokasi', value: 'Surabaya, Jawa Timur'),
         const SizedBox(height: 20),
-        const Text(
+        Text(
           'Preferensi',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
         ),
         const SizedBox(height: 16),
         const _ProfileTile(label: 'Fokus Latihan', value: 'Kebugaran & Kesehatan'),
@@ -288,14 +294,15 @@ class _ProfileTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.15), width: 1.5),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white70)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
+          Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface)),
         ],
       ),
     );

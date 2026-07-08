@@ -9,7 +9,7 @@ class AppSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       onChanged: onChanged,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       decoration: InputDecoration(
         hintText: 'Cari gym di Surabaya...',
         prefixIcon: const Icon(Icons.search),

@@ -16,8 +16,8 @@ class AppBottomNav extends StatelessWidget {
       selectedIndex: currentIndex,
       onDestinationSelected: onTap,
       labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-      surfaceTintColor: const Color(0xFF1E1E1E),
-      backgroundColor: const Color(0xFF1E1E1E),
+      surfaceTintColor: Colors.transparent,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       destinations: const [
         NavigationDestination(
           icon: Icon(Icons.home_outlined),

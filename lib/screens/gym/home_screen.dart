@@ -86,14 +86,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       toolbarHeight: 64,
                       pinned: true,
                       floating: false,
-                      backgroundColor: const Color(0xFF121212),
+                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                       surfaceTintColor: Colors.transparent,
-                      title: const Text(
+                      title: Text(
                         'Gym & Fitness',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       actions: const [],
@@ -199,8 +199,11 @@ class _HomeScreenState extends State<HomeScreen> {
       clipBehavior: Clip.hardEdge,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2979FF), Color(0xFF00B0FF)],
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.secondary,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -244,12 +247,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.white38, size: 48),
+            Icon(Icons.error_outline, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4), size: 48),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Gagal memuat data',
               style: TextStyle(
-                color: Colors.white70,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -257,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 8),
             Text(
               _error!,
-              style: const TextStyle(color: Colors.white38, fontSize: 12),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4), fontSize: 12),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -297,7 +300,7 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     return Container(
-      color: const Color(0xFF121212),
+      color: Theme.of(context).scaffoldBackgroundColor,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: categories.isEmpty
           ? const SizedBox.shrink()

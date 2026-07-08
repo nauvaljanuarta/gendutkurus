@@ -309,7 +309,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         content: Text('Tema peta diubah ke: ${_currentMapStyle.toUpperCase()}'),
         duration: const Duration(seconds: 1),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF2979FF),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -327,7 +327,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       case 'crossfit':
         return const Color(0xFFFFD600); // Bright Yellow
       default:
-        return const Color(0xFF2979FF); // Electric Blue
+        return const Color(0xFF3F72AF); // Steel Blue
     }
   }
 
@@ -363,7 +363,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           Polyline(
                             points: _routePoints,
                             strokeWidth: 8.0,
-                            color: const Color(0xFF2979FF).withValues(alpha: 0.3),
+                            color: const Color(0xFF3F72AF).withValues(alpha: 0.3),
                           ),
                           Polyline(
                             points: _routePoints,
@@ -569,7 +569,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       // Recenter User Location
                       _buildDeckButton(
                         icon: _shouldCenterOnUser ? Icons.gps_fixed : Icons.gps_not_fixed,
-                        iconColor: _shouldCenterOnUser ? const Color(0xFF2979FF) : Colors.white70,
+                        iconColor: _shouldCenterOnUser ? Theme.of(context).colorScheme.primary : Colors.white70,
                         onTap: () {
                           if (_userPosition != null) {
                             setState(() {
@@ -582,11 +582,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                             if (_shouldCenterOnUser) {
                               ScaffoldMessenger.of(context).clearSnackBars();
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Mengikuti lokasi Anda secara real-time'),
-                                  duration: Duration(seconds: 2),
+                                SnackBar(
+                                  content: const Text('Mengikuti lokasi Anda secara real-time'),
+                                  duration: const Duration(seconds: 2),
                                   behavior: SnackBarBehavior.floating,
-                                  backgroundColor: Color(0xFF2979FF),
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
                                 ),
                               );
                             }
@@ -1080,7 +1080,7 @@ class _PulseRadarMarkerState extends State<PulseRadarMarker>
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2979FF).withValues(alpha: 0.5),
+                    color: const Color(0xFF3F72AF).withValues(alpha: 0.5),
                     blurRadius: 8,
                     spreadRadius: 2,
                   ),
@@ -1092,7 +1092,7 @@ class _PulseRadarMarkerState extends State<PulseRadarMarker>
               height: 8,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFF2979FF),
+                color: Color(0xFF3F72AF),
               ),
             ),
           ],

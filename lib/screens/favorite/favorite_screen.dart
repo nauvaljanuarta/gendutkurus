@@ -66,11 +66,11 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.favorite_border, color: Colors.white24, size: 64),
+            Icon(Icons.favorite_border, color: Theme.of(context).colorScheme.primary.withOpacity(0.3), size: 64),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Login untuk melihat gym favorit',
-              style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -81,7 +81,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                 ).then((_) => _loadFavorites());
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2979FF),
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -106,10 +106,10 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.white38, size: 48),
+            Icon(Icons.error_outline, color: Theme.of(context).colorScheme.primary.withOpacity(0.4), size: 48),
             const SizedBox(height: 12),
             Text('Gagal memuat favorit',
-                style: TextStyle(color: Colors.white70)),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _loadFavorites,
@@ -125,12 +125,12 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.favorite_border, color: Colors.white24, size: 64),
-            SizedBox(height: 16),
+          children: [
+            Icon(Icons.favorite_border, color: Theme.of(context).colorScheme.primary.withOpacity(0.3), size: 64),
+            const SizedBox(height: 16),
             Text(
               'Belum ada gym favorit.',
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
             ),
           ],
         ),

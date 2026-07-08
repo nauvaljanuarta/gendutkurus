@@ -24,7 +24,7 @@ class GendutKurusApp extends StatelessWidget {
     return MaterialApp(
       title: 'Gendut Kurus',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark(),
+      theme: AppTheme.light(),
       initialRoute: SplashScreen.routeName,
       routes: {
         SplashScreen.routeName: (context) => const SplashScreen(),
