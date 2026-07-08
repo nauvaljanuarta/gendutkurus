@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/gym_model.dart';
 import '../../services/api_client.dart';
 import '../../services/favorite_service.dart';
@@ -925,7 +926,12 @@ class _DetailScreenState extends State<DetailScreen> {
                     CircleAvatar(
                       radius: 14,
                       backgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-                      child: Icon(Icons.person, size: 16, color: Theme.of(context).colorScheme.onSurface),
+                      backgroundImage: review.userAvatarUrl != null
+                          ? CachedNetworkImageProvider(review.userAvatarUrl!)
+                          : null,
+                      child: review.userAvatarUrl == null
+                          ? Icon(Icons.person, size: 16, color: Theme.of(context).colorScheme.onSurface)
+                          : null,
                     ),
                     const SizedBox(width: 8),
                     Text(

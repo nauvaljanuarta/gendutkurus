@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/review_model.dart';
 import '../../services/review_service.dart';
 
@@ -166,11 +167,16 @@ class _ReviewsListScreenState extends State<ReviewsListScreen> {
                     CircleAvatar(
                       radius: 14,
                       backgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-                      child: Icon(
-                        Icons.person,
-                        size: 16,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                      backgroundImage: review.userAvatarUrl != null
+                          ? CachedNetworkImageProvider(review.userAvatarUrl!)
+                          : null,
+                      child: review.userAvatarUrl == null
+                          ? Icon(
+                              Icons.person,
+                              size: 16,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
